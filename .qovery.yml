@@ -1,0 +1,11 @@
+---
+application:
+  name: "fstack"
+  project: "vietnamagroBEtest"
+  organization: "QoveryCommunity"
+routers:
+- name: "main-fstack"
+  routes:
+  - application_name: "fstack"
+    paths:
+    - "/*"
