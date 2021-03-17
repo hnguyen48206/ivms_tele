@@ -1,7 +1,8 @@
 const express = require('express');
 const emailValidator = require("email-validator");
 var admin = require("firebase-admin");
-//deploy to vercel for testing
+//deploy to vercel for testing 
+//test redeploy when pushing to deployment branch
 
 var serviceAccount = require("./fbCert/vietnamagron-be-fb-firebase-adminsdk-63suj-361b8f9b86.json");
 
