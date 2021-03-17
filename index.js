@@ -1,6 +1,7 @@
 const express = require('express');
 const emailValidator = require("email-validator");
 var admin = require("firebase-admin");
+//deploy to vercel for testing
 
 var serviceAccount = require("./fbCert/vietnamagron-be-fb-firebase-adminsdk-63suj-361b8f9b86.json");
 
@@ -34,7 +35,7 @@ app.get('/hello', (req, res, next) => {
       console.log(result.data())
       res.send(result.data());
 
-    })
+    }) 
     .catch(err => {
       console.log(err)
       res.send(err);
