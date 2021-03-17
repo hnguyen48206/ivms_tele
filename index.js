@@ -12,7 +12,7 @@ const usersDb = db.collection('users');
 const liam = usersDb.doc('lragozzine');
 
 
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 const app = express()
 
 /* JSON body parse*/
