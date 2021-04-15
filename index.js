@@ -21,6 +21,7 @@ const app = express()
 
 /* JSON body parse*/
 const bodyParser = require('body-parser');
+const e = require('express');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -31,6 +32,22 @@ app.get('/news', (req, res, next) =>{
     console.log(err)
     res.send('Failed to get news')
   })
+})
+
+app.get('/news/:page', (req, res, next) =>{
+  console.log(req.params.page)
+  if(Number.isInteger(parseInt(req.params.page)))
+  {
+    news_scraper.getMoreNews('https://tuoitre.vn/timeline/0/trang-' + req.params.page + '.htm').then(result=>{
+      res.send(result)
+    }).catch(err=>{
+      console.log(err)
+      res.send('Failed to get more news')
+    })
+  }
+  else{
+    res.send('Page number is not valid')
+  }  
 })
 
 app.get('/hello', (req, res, next) => {
