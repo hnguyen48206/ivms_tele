@@ -16,7 +16,7 @@ module.exports = {
         password: 'hnguyen48206',
         database: 'hn16289_mysqlTest'
     },
-    autoNewsScrappingtoDB(time) {
+    autoNewsScrappingtoDBEvery(time) {
         const scheduler = new ToadScheduler()
         const task = new AsyncTask(
             'news scrapping',
@@ -29,7 +29,6 @@ module.exports = {
         const job = new SimpleIntervalJob({ seconds: time, }, task)
 
         scheduler.addSimpleIntervalJob(job)
-
     },
     getMoreNews(apiURL) {
         console.log(apiURL)
