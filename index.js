@@ -25,29 +25,28 @@ const e = require('express');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/news', (req, res, next) =>{
-  news_scraper.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(result=>{
+app.get('/news', (req, res, next) => {
+  news_scraper.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(result => {
     res.send(result)
-  }).catch(err=>{
+  }).catch(err => {
     console.log(err)
     res.send('Failed to get news')
   })
 })
 
-app.get('/news/:page', (req, res, next) =>{
+app.get('/news/:page', (req, res, next) => {
   console.log(req.params.page)
-  if(Number.isInteger(parseInt(req.params.page)))
-  {
-    news_scraper.getMoreNews('https://tuoitre.vn/timeline/0/trang-' + req.params.page + '.htm').then(result=>{
+  if (Number.isInteger(parseInt(req.params.page))) {
+    news_scraper.getMoreNews('https://tuoitre.vn/timeline/0/trang-' + req.params.page + '.htm').then(result => {
       res.send(result)
-    }).catch(err=>{
+    }).catch(err => {
       console.log(err)
       res.send('Failed to get more news')
     })
   }
-  else{
+  else {
     res.send('Page number is not valid')
-  }  
+  }
 })
 
 app.get('/hello', (req, res, next) => {
@@ -64,7 +63,7 @@ app.get('/hello', (req, res, next) => {
       console.log(result.data())
       res.send(result.data());
 
-    }) 
+    })
     .catch(err => {
       console.log(err)
       res.send(err);
@@ -81,9 +80,9 @@ app.post('/emailValidate', async (req, res, next) => {
     console.warn('/emailValidate wrong input ');
     res.status(500).json({ 'status': 'wrong input' });
   }
-
 });
 
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
+  // news_scraper.autoNewsScrappingtoDB(2)
 });
