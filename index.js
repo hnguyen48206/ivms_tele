@@ -1,6 +1,8 @@
 const express = require('express');
 const emailValidator = require("email-validator");
 var admin = require("firebase-admin");
+const news_scraper = require('./news_scraper.js')
+
 //deploy to vercel for testing 
 //test redeploy when pushing to deployment branch
 
@@ -21,6 +23,15 @@ const app = express()
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.get('/news', (req, res, next) =>{
+  news_scraper.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(result=>{
+    res.send(result)
+  }).catch(err=>{
+    console.log(err)
+    res.send('Failed to get news')
+  })
+})
 
 app.get('/hello', (req, res, next) => {
   console.info('/hello call success ');
