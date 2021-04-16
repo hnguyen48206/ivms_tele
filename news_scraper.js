@@ -72,7 +72,7 @@ module.exports = {
                     title: $(elem).find('h2 a').text(),
                     url: $(elem).find('h2 a').attr('href'),
                     pubdate: $(elem).find('div.hot-news-tol p').text(),
-                    image: $(elem).find('a img').attr('src')
+                    image: 'http://songcong.thainguyen.gov.vn' + $(elem).find('a img').attr('src')
                 });
             });
         else if (type == 'medic')
