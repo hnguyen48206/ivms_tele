@@ -25,7 +25,7 @@ const e = require('express');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/songcongnews/:type', (req, res, next) => {
+app.post('/songcongnews/:type', (req, res, next) => {
   if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
     news_scraper.getSongCongNews(req.params.type).then(result => {
       res.status(200).json({data: result})
