@@ -28,7 +28,7 @@ app.use(bodyParser.json());
 app.get('/songcongnews/:type', (req, res, next) => {
   if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
     news_scraper.getSongCongNews(req.params.type).then(result => {
-      res.status(200).send(result)
+      res.status(200).json({data: result})
     }).catch(err => {
       console.log(err)
       res.status(500).send('Failed to get news')
