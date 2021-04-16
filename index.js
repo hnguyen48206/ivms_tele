@@ -25,6 +25,19 @@ const e = require('express');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.get('/songcongnews/:type', (req, res, next) => {
+  if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
+    news_scraper.getSongCongNews(req.params.type).then(result => {
+      res.status(200).send(result)
+    }).catch(err => {
+      console.log(err)
+      res.status(500).send('Failed to get news')
+    })
+  }
+  else
+    res.status(500).send('News type is not valid')
+})
+
 app.get('/news', (req, res, next) => {
   news_scraper.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(result => {
     res.send(result)
