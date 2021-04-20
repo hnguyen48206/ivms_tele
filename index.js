@@ -124,18 +124,18 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 // appProxy.listen(3500);
 
-const proxyTable = {
-  'edu.localhost:3500': 'http://thainguyen.edu.vn', 
-  'general.localhost:3500': 'http://songcong.thainguyen.gov.vn', 
-  'medic.localhost:3500': 'http://soytethainguyen.gov.vn',
-};
+// const proxyTable = {
+//   'edu.localhost:3500': 'http://thainguyen.edu.vn', 
+//   'general.localhost:3500': 'http://songcong.thainguyen.gov.vn', 
+//   'medic.localhost:3500': 'http://soytethainguyen.gov.vn',
+// };
 
-const options = {
-  target: 'http://localhost:3500',
-  router: proxyTable,
-  changeOrigin: true
-};
+// const options = {
+//   target: 'http://localhost:3500',
+//   router: proxyTable,
+//   changeOrigin: true
+// };
 
-const proxyserver = createProxyMiddleware(options);
-appProxy.use(proxyserver)
-appProxy.listen(3500)
+// const proxyserver = createProxyMiddleware(options);
+// appProxy.use(proxyserver)
+// appProxy.listen(3500)
