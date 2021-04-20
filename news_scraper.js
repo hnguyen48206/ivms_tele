@@ -102,7 +102,7 @@ module.exports = {
         if (type == 'general') {
             return new Promise((resolve, reject) => {
                 axios.get('https://caobang.gov.vn/Default.aspx?sname=ubnd&sid=4&pageid=468').then(res => {
-                    resolve(this.extractCaobangData(res.data, type))
+                    resolve(this.extractCaoBangData(res.data, type))
                 })
                     .catch(err => {
                         reject('fail here')
@@ -110,7 +110,7 @@ module.exports = {
             })
         }      
     },
-    extractCaobangData: function (html, type) {
+    extractCaoBangData: function (html, type) {
         let currentDate=new Date().getDate() + '/' + new Date().getMonth() + '/' + new Date().getFullYear()
         data = [];
         const $ = cheerio.load(html);
