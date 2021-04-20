@@ -18,6 +18,7 @@ const liam = usersDb.doc('lragozzine');
 
 const PORT = process.env.PORT || 3000
 const app = express()
+const axios = require('axios');
 
 /* JSON body parse*/
 const bodyParser = require('body-parser');
@@ -25,10 +26,24 @@ const e = require('express');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
 app.post('/songcongnews/:type', (req, res, next) => {
   if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
     news_scraper.getSongCongNews(req.params.type).then(result => {
-      res.status(200).json({data: result})
+      res.status(200).json({ data: result })
+    }).catch(err => {
+      console.log(err)
+      res.status(500).send('Failed to get news')
+    })
+  }
+  else
+    res.status(500).send('News type is not valid')
+})
+
+app.post('/caobangnews/:type', (req, res, next) => {
+  if (req.params.type == 'general') {
+    news_scraper.getCaoBangNews(req.params.type).then(result => {
+      res.status(200).json({ data: result })
     }).catch(err => {
       console.log(err)
       res.status(500).send('Failed to get news')
@@ -99,3 +114,28 @@ app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2)
 });
+
+
+//create another express app just for proxy processing
+const appProxy = express()
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+// appProxy.use('*', createProxyMiddleware({ target: 'http://thainguyen.edu.vn/', changeOrigin: true }));
+
+// appProxy.listen(3500);
+
+const proxyTable = {
+  'edu.localhost:3500': 'http://thainguyen.edu.vn', 
+  'general.localhost:3500': 'http://songcong.thainguyen.gov.vn', 
+  'medic.localhost:3500': 'http://soytethainguyen.gov.vn',
+};
+
+const options = {
+  target: 'http://localhost:3500',
+  router: proxyTable,
+  changeOrigin: true
+};
+
+const proxyserver = createProxyMiddleware(options);
+appProxy.use(proxyserver)
+appProxy.listen(3500)

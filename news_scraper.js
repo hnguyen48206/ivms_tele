@@ -16,6 +16,8 @@ module.exports = {
         password: 'hnguyen48206',
         database: 'hn16289_mysqlTest'
     },
+    
+
     autoNewsScrappingtoDBEvery(time) {
         const scheduler = new ToadScheduler()
         const task = new AsyncTask(
@@ -30,7 +32,6 @@ module.exports = {
 
         scheduler.addSimpleIntervalJob(job)
     },
-
     getSongCongNews(type) {
         if (type == 'general') {
             return new Promise((resolve, reject) => {
@@ -93,12 +94,75 @@ module.exports = {
                 image: 'http://thainguyen.edu.vn'+$(elem).find('div.post-item div.left-col figure a img').attr('src'),
             });
         });
-
-        
+       
         console.log(data)
         return data;
     },
-
+    getCaoBangNews(type) {
+        if (type == 'general') {
+            return new Promise((resolve, reject) => {
+                axios.get('https://caobang.gov.vn').then(res => {
+                    resolve(this.extractCaobangData(res.data, type))
+                })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        }
+        // else if (type == 'edu') {
+        //     return new Promise((resolve, reject) => {
+        //         axios.get('http://thainguyen.edu.vn/tin-tuc-su-kien').then(res => {
+        //             resolve(this.extractSongcongData(res.data, type))
+        //         })
+        //             .catch(err => {
+        //                 reject(err)
+        //             })
+        //     })
+        // }
+        // else if (type == 'medic') {
+        //     return new Promise((resolve, reject) => {
+        //         axios.get('http://soytethainguyen.gov.vn/tin-tuc-su-kien').then(res => {
+        //             resolve(this.extractSongcongData(res.data, type))
+        //         })
+        //             .catch(err => {
+        //                 reject(err)
+        //             })
+        //     })
+        // }
+    },
+    extractCaobangData: function (html, type) {
+        let currentDate=new Date().getDate() + '/' + new Date().getMonth() + '/' + new Date().getFullYear()
+        data = [];
+        const $ = cheerio.load(html);
+        if (type == 'general')
+            $('div.HotnewsItem').each((i, elem) => {
+                    data.push({
+                    title: $(elem).find('a').attr('type'),
+                    url: 'https://caobang.gov.vn' + $(elem).find('a').attr('href'),
+                    pubdate: currentDate,
+                    image: 'https://caobang.gov.vn' + $(elem).find('a img').attr('src')                    
+                });                
+            });
+        // else if (type == 'medic')
+        // $('div.box-news-xx').each((i, elem) => {
+        //     data.push({
+        //         title: $(elem).find('h2 a').text(),
+        //         url: $(elem).find('h2 a').attr('href'),
+        //         pubdate: $(elem).find('div.hot-news-tol p').text(),
+        //         image: 'http://soytethainguyen.gov.vn' + $(elem).find('a img').attr('src')
+        //     });
+        // });
+        // else if (type == 'edu')
+        // $('article.listNewSmall').each((i, elem) => {
+        //     data.push({
+        //         title: $(elem).find('div.post-item div.left-col figure a').attr('title'),
+        //         url: 'http://thainguyen.edu.vn'+$(elem).find('div.post-item div.left-col figure a').attr('href'),
+        //         pubdate: $(elem).find('div.post-item div.right-col div.post-title span time').text(),
+        //         image: 'http://thainguyen.edu.vn'+$(elem).find('div.post-item div.left-col figure a img').attr('src'),
+        //     });
+        // });       
+        return data.slice(0, 15);
+    },
     getMoreNews(apiURL) {
         console.log(apiURL)
         return new Promise((resolve, reject) => {
