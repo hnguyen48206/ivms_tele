@@ -18,11 +18,9 @@ const liam = usersDb.doc('lragozzine');
 
 const PORT = process.env.PORT || 3000
 const app = express()
-const axios = require('axios');
 
 /* JSON body parse*/
 const bodyParser = require('body-parser');
-const e = require('express');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -40,7 +38,7 @@ app.post('/songcongnews/:type', (req, res, next) => {
     res.status(500).send('News type is not valid')
 })
 
-app.post('/caobangnews/:type', (req, res, next) => {
+app.post('/caobang_news/:type', (req, res, next) => {
   if (req.params.type == 'general') {
     news_scraper.getCaoBangNews(req.params.type).then(result => {
       res.status(200).json({ data: result })
@@ -117,8 +115,8 @@ app.listen(PORT, () => {
 
 
 //create another express app just for proxy processing
-const appProxy = express()
-const { createProxyMiddleware } = require('http-proxy-middleware');
+// const appProxy = express()
+// const { createProxyMiddleware } = require('http-proxy-middleware');
 
 // appProxy.use('*', createProxyMiddleware({ target: 'http://thainguyen.edu.vn/', changeOrigin: true }));
 
