@@ -41,6 +41,7 @@ app.post('/songcongnews/:type', (req, res, next) => {
 })
 
 app.post('/caobangnews/:type', (req, res, next) => {
+  req.setTimeout(0)
   if (req.params.type == 'general') {
     news_scraper.getCaoBangNews(req.params.type).then(result => {
       res.status(200).json({ data: result })
