@@ -41,7 +41,7 @@ app.post('/songcongnews/:type', (req, res, next) => {
     res.status(500).send('News type is not valid')
 })
 
-app.post('/caobang_news/:type', (req, res, next) => {
+app.post('/caobangnews/:type', (req, res, next) => {
   if (req.params.type == 'general') {
     news_scraper.getCaoBangNews(req.params.type).then(result => {
       res.status(200).json({ data: result })

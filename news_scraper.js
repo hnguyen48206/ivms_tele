@@ -102,7 +102,7 @@ module.exports = {
     getCaoBangNews(type) {
         if (type == 'general') {
             return new Promise((resolve, reject) => {
-                axios.get('https://caobang.gov.vn/Default.aspx?sname=ubnd&sid=4&pageid=468').then(res => {
+                axios.get('https://tuoitre.vn/tin-moi-nhat.htm').then(res => {
                     resolve(this.extractCaoBangData(res.data, type))
                 })
                     .catch(err => {
