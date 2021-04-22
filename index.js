@@ -25,10 +25,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
+app.post('/thaibinhnews/:type', (req, res, next) => {
+  if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
+    news_scraper.getThaibinhNews(req.params.type).then(result => {
+      res.status(200).json({ data: result })
+    }).catch(err => {
+      console.log(err)
+      res.status(500).send('Failed to get news')
+    })
+  }
+  else
+    res.status(500).send('News type is not valid')
+})
+
+
 app.post('/songcongnews/:type', (req, res, next) => {
-  req.setTimeout(3000, ()=>{
-    res.status(500).send('Timeout api')
-  })
   if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
     news_scraper.getSongCongNews(req.params.type).then(result => {
       res.status(200).json({ data: result })
