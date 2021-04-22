@@ -182,8 +182,8 @@ module.exports = {
         }
         else if (type == 'edu') {
             return new Promise((resolve, reject) => {
-                axios.get('http://thainguyen.edu.vn/tin-tuc-su-kien').then(res => {
-                    resolve(this.extractSongcongData(res.data, type))
+                axios.get('http://thaibinh.edu.vn/tin-tuc-su-kien').then(res => {
+                    resolve(this.extractThaibinhData(res.data, type))
                 })
                     .catch(err => {
                         reject(err)
@@ -192,8 +192,8 @@ module.exports = {
         }
         else if (type == 'medic') {
             return new Promise((resolve, reject) => {
-                axios.get('http://soytethainguyen.gov.vn/tin-tuc-su-kien').then(res => {
-                    resolve(this.extractSongcongData(res.data, type))
+                axios.get('https://soyte.thaibinh.gov.vn/tin-tuc').then(res => {
+                    resolve(this.extractThaibinhData(res.data, type))
                 })
                     .catch(err => {
                         reject(err)
@@ -202,6 +202,7 @@ module.exports = {
         }
     },
     extractThaibinhData: function (html, type) {
+        console.log(html)
         let currentDate = new Date().getDate() + '/' + new Date().getMonth() + '/' + new Date().getFullYear()
 
         data = [];
@@ -216,24 +217,24 @@ module.exports = {
                 });
             });
         else if (type == 'medic')
-            $('div.box-news-xx').each((i, elem) => {
+            $('div.news-item').each((i, elem) => {
                 data.push({
-                    title: $(elem).find('h2 a').text(),
-                    url: $(elem).find('h2 a').attr('href'),
-                    pubdate: $(elem).find('div.hot-news-tol p').text(),
-                    image: 'http://soytethainguyen.gov.vn' + $(elem).find('a img').attr('src')
+                    title: $(elem).find('a').attr('title'),
+                    url: 'https://soyte.thaibinh.gov.vn' + $(elem).find('a').attr('href'),
+                    pubdate: currentDate,
+                    image: 'https://soyte.thaibinh.gov.vn' + $(elem).find('a img').attr('src')
                 });
             });
         else if (type == 'edu')
-            $('article.listNewSmall').each((i, elem) => {
+            $('article.Article-News').each((i, elem) => {
                 data.push({
-                    title: $(elem).find('div.post-item div.left-col figure a').attr('title'),
-                    url: 'http://thainguyen.edu.vn' + $(elem).find('div.post-item div.left-col figure a').attr('href'),
-                    pubdate: $(elem).find('div.post-item div.right-col div.post-title span time').text(),
-                    image: 'http://thainguyen.edu.vn' + $(elem).find('div.post-item div.left-col figure a img').attr('src'),
+                    title: $(elem).find('div div.left-listType4 figure a').attr('title'),
+                    url: 'http://thaibinh.edu.vn' + $(elem).find('div div.left-listType4 figure a').attr('href'),
+                    pubdate: currentDate,
+                    image: 'http://thaibinh.edu.vn' + $(elem).find('div div.left-listType4 figure a img').attr('src'),
                 });
             });
-
+            
         console.log(data)
         return data;
     },
