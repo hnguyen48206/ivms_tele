@@ -125,6 +125,9 @@ app.post('/emailValidate', async (req, res, next) => {
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2)
+  dbManager.daConnectionInit().then(res=>{
+    dbManager.findAllRecordsofaTable(res)
+  }).catch(err=>{console.log(err)})
 });
 
 
@@ -151,3 +154,14 @@ app.listen(PORT, () => {
 // const proxyserver = createProxyMiddleware(options);
 // appProxy.use(proxyserver)
 // appProxy.listen(3500)
+
+
+
+///////////////////////////////MongoDBtest///////////////////////////////////////
+// const dbManager = require('./mongoDB/connectionManager.js')
+// dbManager.daConnectionInit().then(res=>{
+// // dbManager.findAllRecordsofaTable()
+// // }).catch(err=>{
+
+// dbManager.deleteDocuments(res);
+// });
