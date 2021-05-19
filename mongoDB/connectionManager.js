@@ -55,7 +55,7 @@ module.exports = {
 
         //delete with comparision Condition. In this example, delete record where beds is greater than 1
         collection.deleteMany( {"beds" : { $gt : 1 }}).then(res=>{
-            console.log(res)
+            console.log
         }).catch(err=>{
 
         });        

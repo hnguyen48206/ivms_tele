@@ -7,7 +7,7 @@ const news_scraper = require('./news_scraper.js')
 //test redeploy when pushing to deployment branch
 
 var serviceAccount = require("./fbCert/vietnamagron-be-fb-firebase-adminsdk-63suj-361b8f9b86.json");
-
+ 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -125,9 +125,9 @@ app.post('/emailValidate', async (req, res, next) => {
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2)
-  dbManager.daConnectionInit().then(res=>{
+  dbManager.daConnectionInit().then(res => {
     dbManager.findAllRecordsofaTable(res)
-  }).catch(err=>{console.log(err)})
+  }).catch(err => { console.log(err) })
 });
 
 
@@ -158,10 +158,11 @@ app.listen(PORT, () => {
 
 
 ///////////////////////////////MongoDBtest///////////////////////////////////////
-// const dbManager = require('./mongoDB/connectionManager.js')
-// dbManager.daConnectionInit().then(res=>{
-// // dbManager.findAllRecordsofaTable()
-// // }).catch(err=>{
+const dbManager = require('./mongoDB/connectionManager.js')
+dbManager.daConnectionInit().then(res => {
+  // res is DB client
+  // dbManager.findAllRecordsofaTable(res);
 
-// dbManager.deleteDocuments(res);
-// });
+  // dbManager.deleteDocuments(res);
+}).catch(err => {
+});

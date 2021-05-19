@@ -16,8 +16,7 @@ module.exports = {
         user: 'hn16289_mysqlAdmin',
         password: 'hnguyen48206',
         database: 'hn16289_mysqlTest'
-    },
-
+    }, 
 
     autoNewsScrappingtoDBEvery(time) {
         const scheduler = new ToadScheduler()
