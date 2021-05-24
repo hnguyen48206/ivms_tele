@@ -7,7 +7,7 @@ const news_scraper = require('./news_scraper.js')
 //test redeploy when pushing to deployment branch
 
 var serviceAccount = require("./fbCert/vietnamagron-be-fb-firebase-adminsdk-63suj-361b8f9b86.json");
- 
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -124,10 +124,7 @@ app.post('/emailValidate', async (req, res, next) => {
 
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
-  // news_scraper.autoNewsScrappingtoDB(2)
-  dbManager.daConnectionInit().then(res => {
-    dbManager.findAllRecordsofaTable(res)
-  }).catch(err => { console.log(err) })
+  // news_scraper.autoNewsScrappingtoDB(2) 
 });
 
 
@@ -159,10 +156,26 @@ app.listen(PORT, () => {
 
 ///////////////////////////////MongoDBtest///////////////////////////////////////
 const dbManager = require('./mongoDB/connectionManager.js')
-dbManager.daConnectionInit().then(res => {
+const Grid = require('gridfs-stream');
+var gfs
+dbManager.dbConnectionInit().then(res => {
   // res is DB client
   // dbManager.findAllRecordsofaTable(res);
 
   // dbManager.deleteDocuments(res);
+
+  dbManager.gridFsInit(res).then(res => {
+    gfs = res
+  }).catch(err => { console.log(err) })
 }).catch(err => {
+});
+
+app.post('/file', function (req, res) {
+  var writeStream = gfs.createWriteStream({
+    filename: 'file_name_here'
+  });
+  writeStream.on('close', function (file) {
+    res.send(`File has been uploaded ${file._id}`);
+  });
+  req.pipe(writeStream);
 });

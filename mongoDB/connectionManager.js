@@ -2,10 +2,11 @@ const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://fstack2:Vnpt@123@cluster0.nuxmy.mongodb.net/sample_airbnb?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 const assert = require('assert');
+const Grid = require('gridfs-stream');
 
 
 module.exports = {
-    daConnectionInit() {
+    dbConnectionInit() {
         return new Promise((resolve, reject) => {
             client.connect(err => {
                 if (err == null) {
@@ -46,19 +47,33 @@ module.exports = {
         // collection.find({}).sort( { "A": 1, "B": 1 } )
     },
 
-    deleteDocuments(dbClient)
-    {
+    deleteDocuments(dbClient) {
         const collection = dbClient.db("sample_airbnb").collection("listingsAndReviews");
 
         //delete with equal to Condition
         // collection.deleteMany( { "client" : "Crude Traders Inc." } );
 
         //delete with comparision Condition. In this example, delete record where beds is greater than 1
-        collection.deleteMany( {"beds" : { $gt : 1 }}).then(res=>{
+        collection.deleteMany({ "beds": { $gt: 1 } }).then(res => {
             console.log
-        }).catch(err=>{
+        }).catch(err => {
 
-        });        
+        });
+    },
+
+
+    //Grid Fs init for storing file that exceeds Bson file size ~ >16mb
+
+    gridFsInit(dbClient) {
+        var gfs = Grid(dbClient, require('mongodb'));
+        gfs.collection('sampleGridfsFileStorage');
+        console.log('All set! Start uploading :)')
+        return new Promise((resolve, reject) => {
+            if (gfs != null)
+                resolve(gfs)
+            else
+                reject(null)
+        })
     }
 }
 
