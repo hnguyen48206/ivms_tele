@@ -156,26 +156,61 @@ app.listen(PORT, () => {
 
 ///////////////////////////////MongoDBtest///////////////////////////////////////
 const dbManager = require('./mongoDB/connectionManager.js')
-const Grid = require('gridfs-stream');
+//busboy is a middleware to handle parsing data sent through multipart form-data
+const Busboy = require('busboy');
 var gfs
-dbManager.dbConnectionInit().then(res => {
+dbManager.dbConnectionInit().then(client => {
   // res is DB client
   // dbManager.findAllRecordsofaTable(res);
 
   // dbManager.deleteDocuments(res);
 
-  dbManager.gridFsInit(res).then(res => {
+  dbManager.gridFsInit(client).then(res => {
     gfs = res
   }).catch(err => { console.log(err) })
-}).catch(err => {
+})
+  .catch(err => {
+  });
+
+app.post('/uploadfile', function (req, res) {
+
+  var busboy = new Busboy({ headers: req.headers });
+
+  busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+    console.log('got file', filename, mimetype, encoding);
+    var writeStream
+    try {
+      writeStream = gfs.createWriteStream({
+        filename: filename,
+        content_type: mimetype,
+      });
+    } catch (error) {
+      console.log(error)
+    }
+    if (writeStream != null) {
+      writeStream.on('close', (file) => {
+        //All the info of the uploaded file has been return. Storing the fileID to your data model for later use. 
+        console.log(file)
+      });
+      file.pipe(writeStream);
+    }
+  }).on('finish', function () {
+    // show a link to the uploaded file
+    res.status(200).send('uploaded successfully');
+  });
+  req.pipe(busboy);
 });
 
-app.post('/file', function (req, res) {
-  var writeStream = gfs.createWriteStream({
-    filename: 'file_name_here'
+app.get('/downloadfile/:filename', function (req, res) {
+  // console.log(gfs)
+  let filename = req.params.filename
+  console.log('filename:' + filename)
+  gfs.exist({ filename: filename }, (err, file) => {
+    if (err || !file) {
+      res.status(404).send('File Not Found');
+      return
+    }
+    var readstream = gfs.createReadStream({ filename: filename });
+    readstream.pipe(res);
   });
-  writeStream.on('close', function (file) {
-    res.send(`File has been uploaded ${file._id}`);
-  });
-  req.pipe(writeStream);
 });

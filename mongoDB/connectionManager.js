@@ -65,9 +65,13 @@ module.exports = {
     //Grid Fs init for storing file that exceeds Bson file size ~ >16mb
 
     gridFsInit(dbClient) {
-        var gfs = Grid(dbClient, require('mongodb'));
-        gfs.collection('sampleGridfsFileStorage');
-        console.log('All set! Start uploading :)')
+        var gfs
+        try {
+            gfs = Grid(dbClient.db("sample_airbnb"), require('mongodb'));           
+            console.log('All set! Start uploading :)')
+        } catch (error) {
+            console.log(error)
+        }
         return new Promise((resolve, reject) => {
             if (gfs != null)
                 resolve(gfs)
