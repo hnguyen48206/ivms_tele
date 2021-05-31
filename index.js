@@ -125,7 +125,7 @@ app.post('/emailValidate', async (req, res, next) => {
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2) 
-  startDBConnection();
+  // startDBConnection();
 });
 
 
@@ -164,21 +164,20 @@ const Busboy = require('busboy');
 var gfs
 var dbClient = null
 var DBError
-function startDBConnection()
-{
+function startDBConnection() {
   dbManager.dbConnectionInit().then(client => {
     // res is DB client
     // dbManager.findAllRecordsofaTable(res);
-  
+
     // dbManager.deleteDocuments(res);
-  
+
     dbClient = client
     dbManager.gridFsInit(client).then(res => {
       gfs = res
     }).catch(err => { console.log(err) })
   })
     .catch(err => {
-      DBError=err
+      DBError = err
       console.log(err)
     });
 }
@@ -233,5 +232,22 @@ app.get('/checkDBConnection', function (req, res) {
     res.status(200).send('DB kết nối ổn')
   }
   else
-    res.status(500).json({errorMessage: DBError})
+    res.status(500).json({ errorMessage: DBError })
+});
+
+app.get('/testDB', function (req, res) {
+
+  dbManager.dbConnectionInit().then(client => {
+    
+    dbManager.gridFsInit(client).then(res => {
+      gfs = res
+    }).catch(err => { console.log(err) })
+    res.status(200).send('DB kết nối ổn')
+
+  })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({ errorMessage: 'Fail' })
+    });
+
 });
