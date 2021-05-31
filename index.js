@@ -162,7 +162,7 @@ const dbManager = require('./mongoDB/connectionManager.js')
 //busboy is a middleware to handle parsing data sent through multipart form-data
 const Busboy = require('busboy');
 var gfs
-var dbClient
+var dbClient = null
 var DBError
 function startDBConnection()
 {
