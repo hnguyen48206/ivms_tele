@@ -163,7 +163,7 @@ const dbManager = require('./mongoDB/connectionManager.js')
 const Busboy = require('busboy');
 var gfs
 var dbClient
-
+var DBError
 function startDBConnection()
 {
   dbManager.dbConnectionInit().then(client => {
@@ -178,6 +178,7 @@ function startDBConnection()
     }).catch(err => { console.log(err) })
   })
     .catch(err => {
+      DBError=err
       console.log(err)
     });
 }
@@ -232,5 +233,5 @@ app.get('/checkDBConnection', function (req, res) {
     res.status(200).send('DB kết nối ổn')
   }
   else
-    res.status(500).send('DB kết nối fail')
+    res.status(500).send(DBError)
 });
