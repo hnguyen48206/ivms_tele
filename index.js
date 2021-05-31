@@ -184,7 +184,7 @@ app.post('/uploadfile', function (req, res) {
         filename: filename,
         content_type: mimetype,
       });
-    } catch (error) {
+    } catch (error) { 
       console.log(error)
     }
     if (writeStream != null) {
