@@ -163,7 +163,7 @@ const dbManager = require('./mongoDB/connectionManager.js')
 const Busboy = require('busboy');
 var gfs
 var dbClient
-var DBError=''
+var DBError
 function startDBConnection()
 {
   dbManager.dbConnectionInit().then(client => {
@@ -178,7 +178,7 @@ function startDBConnection()
     }).catch(err => { console.log(err) })
   })
     .catch(err => {
-      DBError=err.toString();
+      DBError=err
       console.log(err)
     });
 }
