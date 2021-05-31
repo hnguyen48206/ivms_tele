@@ -125,6 +125,7 @@ app.post('/emailValidate', async (req, res, next) => {
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2) 
+  dbConnectionInit();
 });
 
 
@@ -155,24 +156,29 @@ app.listen(PORT, () => {
 
 
 ///////////////////////////////MongoDBtest///////////////////////////////////////
+
+function dbConnectionInit()
+{
+  dbManager.dbConnectionInit().then(client => {
+    // res is DB client
+    // dbManager.findAllRecordsofaTable(res);
+  
+    // dbManager.deleteDocuments(res);
+  
+    dbClient = client
+    dbManager.gridFsInit(client).then(res => {
+      gfs = res
+    }).catch(err => { console.log(err) })
+  })
+    .catch(err => {
+    });
+}
 const dbManager = require('./mongoDB/connectionManager.js')
 //busboy is a middleware to handle parsing data sent through multipart form-data
 const Busboy = require('busboy');
+const { dbConnectionInit } = require('./mongoDB/connectionManager.js');
 var gfs
 var dbClient
-dbManager.dbConnectionInit().then(client => {
-  // res is DB client
-  // dbManager.findAllRecordsofaTable(res);
-
-  // dbManager.deleteDocuments(res);
-
-  dbClient = client
-  dbManager.gridFsInit(client).then(res => {
-    gfs = res
-  }).catch(err => { console.log(err) })
-})
-  .catch(err => {
-  });
 
 app.post('/uploadfile', function (req, res) {
 
