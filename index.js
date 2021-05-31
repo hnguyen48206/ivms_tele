@@ -159,12 +159,14 @@ const dbManager = require('./mongoDB/connectionManager.js')
 //busboy is a middleware to handle parsing data sent through multipart form-data
 const Busboy = require('busboy');
 var gfs
+var dbClient
 dbManager.dbConnectionInit().then(client => {
   // res is DB client
   // dbManager.findAllRecordsofaTable(res);
 
   // dbManager.deleteDocuments(res);
 
+  dbClient = client
   dbManager.gridFsInit(client).then(res => {
     gfs = res
   }).catch(err => { console.log(err) })
@@ -184,7 +186,7 @@ app.post('/uploadfile', function (req, res) {
         filename: filename,
         content_type: mimetype,
       });
-    } catch (error) { 
+    } catch (error) {
       console.log(error)
     }
     if (writeStream != null) {
@@ -213,4 +215,14 @@ app.get('/downloadfile/:filename', function (req, res) {
     var readstream = gfs.createReadStream({ filename: filename });
     readstream.pipe(res);
   });
+});
+
+app.get('/checkDBConnection', function (req, res) {
+  // console.log(gfs)
+
+  if (dbClient != null) {
+    res.status(200).send('DB kết nối ổn')
+  }
+  else
+    res.status(500).send('DB kết nối fail')
 });
