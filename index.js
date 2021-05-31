@@ -233,5 +233,5 @@ app.get('/checkDBConnection', function (req, res) {
     res.status(200).send('DB kết nối ổn')
   }
   else
-    res.status(500).json(DBError)
+    res.status(500).json({errorMessage: DBError})
 });
