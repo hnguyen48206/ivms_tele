@@ -3,8 +3,10 @@ const emailValidator = require("email-validator");
 var admin = require("firebase-admin");
 const news_scraper = require('./news_scraper.js')
 
-//deploy to vercel for testing 
-//test redeploy when pushing to deployment branch
+// deploy to vercel for testing 
+// Vercel platform is event-driven, therefore not maintaining a running server,
+// we recommend using a third-party service to schedule these tasks.
+// Simply means no automation, no scheduler, no cron job of any sort. 
 
 var serviceAccount = require("./fbCert/vietnamagron-be-fb-firebase-adminsdk-63suj-361b8f9b86.json");
 
@@ -168,7 +170,6 @@ function startDBConnection() {
   dbManager.dbConnectionInit().then(client => {
     // res is DB client
     // dbManager.findAllRecordsofaTable(res);
-
     // dbManager.deleteDocuments(res);
 
     dbClient = client
