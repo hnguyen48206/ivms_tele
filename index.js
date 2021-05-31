@@ -125,7 +125,7 @@ app.post('/emailValidate', async (req, res, next) => {
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2) 
-  dbConnectionInit();
+  startDBConnection();
 });
 
 
@@ -157,7 +157,7 @@ app.listen(PORT, () => {
 
 ///////////////////////////////MongoDBtest///////////////////////////////////////
 
-function dbConnectionInit()
+function startDBConnection()
 {
   dbManager.dbConnectionInit().then(client => {
     // res is DB client
