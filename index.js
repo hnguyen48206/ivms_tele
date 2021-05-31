@@ -157,6 +157,13 @@ app.listen(PORT, () => {
 
 ///////////////////////////////MongoDBtest///////////////////////////////////////
 
+
+const dbManager = require('./mongoDB/connectionManager.js')
+//busboy is a middleware to handle parsing data sent through multipart form-data
+const Busboy = require('busboy');
+var gfs
+var dbClient
+
 function startDBConnection()
 {
   dbManager.dbConnectionInit().then(client => {
@@ -173,12 +180,6 @@ function startDBConnection()
     .catch(err => {
     });
 }
-const dbManager = require('./mongoDB/connectionManager.js')
-//busboy is a middleware to handle parsing data sent through multipart form-data
-const Busboy = require('busboy');
-const { dbConnectionInit } = require('./mongoDB/connectionManager.js');
-var gfs
-var dbClient
 
 app.post('/uploadfile', function (req, res) {
 
