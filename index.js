@@ -228,7 +228,7 @@ app.get('/downloadfile/:filename', function (req, res) {
 
 app.get('/checkDBConnection', function (req, res) {
   // console.log(gfs)
-
+  console.log(DBError)
   if (dbClient != null) {
     res.status(200).send('DB kết nối ổn')
   }
