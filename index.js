@@ -127,6 +127,8 @@ app.post('/emailValidate', async (req, res, next) => {
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // news_scraper.autoNewsScrappingtoDB(2) 
+
+  // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
   // startDBConnection();
 });
 
@@ -212,8 +214,8 @@ app.post('/uploadfile', function (req, res) {
   req.pipe(busboy);
 });
 
-app.get('/downloadfile/:filename', function (req, res) {
-  // console.log(gfs)
+app.get('/downloadFileByFileName/:filename', function (req, res) {
+  //download file using file name. 
   let filename = req.params.filename
   console.log('filename:' + filename)
   gfs.exist({ filename: filename }, (err, file) => {
@@ -226,20 +228,32 @@ app.get('/downloadfile/:filename', function (req, res) {
   });
 });
 
-app.get('/checkDBConnection', function (req, res) {
-  // console.log(gfs)
-  console.log(DBError)
-  if (dbClient != null) {
-    res.status(200).send('DB kết nối ổn')
-  }
-  else
-    res.status(500).json({ errorMessage: DBError })
+app.get('/downloadFileByFileID/:fileID', function (req, res) {
+  //download file using file name. 
+  var file_id = req.params.fileID;
+
+  gfs.files.find({ _id: file_id }).toArray(function (err, files) {
+    if (err) {
+      res.json(err);
+    }
+    if (files.length > 0) {
+      var mime = files[0].contentType;
+      var filename = files[0].filename;
+      res.set('Content-Type', mime);
+      res.set('Content-Disposition', "inline; filename=" + filename);
+      var read_stream = gfs.createReadStream({ _id: file_id });
+      read_stream.pipe(res);
+    } else {
+      res.status(404).json('File Not Found');
+    }
+  });
 });
 
-app.get('/testDB', function (req, res) {
+app.get('/manuallyTriggerDatabaseConnection', function (req, res) {
 
+  // This api is used in cased you need to start or restart connection to mongoDB.
   dbManager.dbConnectionInit().then(client => {
-    
+
     dbManager.gridFsInit(client).then(res => {
       gfs = res
     }).catch(err => { console.log(err) })
