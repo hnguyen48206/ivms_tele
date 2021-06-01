@@ -129,7 +129,7 @@ app.listen(PORT, () => {
   // news_scraper.autoNewsScrappingtoDB(2) 
 
   // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
-  // startDBConnection();
+  startDBConnection();
 });
 
 
@@ -165,6 +165,7 @@ app.listen(PORT, () => {
 const dbManager = require('./mongoDB/connectionManager.js')
 //busboy is a middleware to handle parsing data sent through multipart form-data
 const Busboy = require('busboy');
+const { ObjectID } = require('bson');
 var gfs
 var dbClient = null
 var DBError
@@ -232,7 +233,7 @@ app.get('/downloadFileByFileID/:fileID', function (req, res) {
   //download file using file name. 
   var file_id = req.params.fileID;
 
-  gfs.files.find({ _id: file_id }).toArray(function (err, files) {
+  gfs.files.find({ _id: new ObjectID(file_id) }).toArray(function (err, files) {
     if (err) {
       res.json(err);
     }
@@ -240,11 +241,25 @@ app.get('/downloadFileByFileID/:fileID', function (req, res) {
       var mime = files[0].contentType;
       var filename = files[0].filename;
       res.set('Content-Type', mime);
-      res.set('Content-Disposition', "inline; filename=" + filename);
+      // res.set('Content-Disposition', "inline; filename=" + filename);
       var read_stream = gfs.createReadStream({ _id: file_id });
       read_stream.pipe(res);
     } else {
       res.status(404).json('File Not Found');
+    }
+  });
+});
+
+app.get('/deleteFileByFileID/:fileID', function (req, res) {
+  //download file using file name. 
+  var file_id = req.params.fileID;
+  gfs.remove({ _id: new ObjectID(file_id) }, (err, gridStore) => {
+    if (err) {
+      res.status(404).send('File Not Found');
+      return
+    }
+    else {
+      res.status(200).send('File ID:' + file_id + 'has been removed from Database');
     }
   });
 });
