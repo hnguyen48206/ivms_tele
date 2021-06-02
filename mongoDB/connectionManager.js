@@ -117,7 +117,7 @@ module.exports = {
                     console.error("This listing is already reserved for at least one of the given dates. The reservation could not be created.");
                     console.error("Any operations that already occurred as part of this transaction will be rolled back.");
                     return;
-                }
+                } 
      
                 const listingsAndReviewsUpdateResults = await listingsAndReviewsCollection.updateOne(
                     { name: nameOfListing },
