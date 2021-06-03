@@ -1,37 +1,9 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { ToadScheduler, SimpleIntervalJob, AsyncTask } = require('toad-scheduler')
-const https = require('https');
+const {SimpleIntervalJob, AsyncTask } = require('toad-scheduler')
 
-module.exports = {
-    postgre: {
-        user: 'hn16289_admin',
-        host: 'johnny.heliohost.org',
-        database: 'hn16289_testDB',
-        password: 'hnguyen48206',
-        port: 5432
-    },
-    mysql: {
-        host: 'johnny.heliohost.org',
-        user: 'hn16289_mysqlAdmin',
-        password: 'hnguyen48206',
-        database: 'hn16289_mysqlTest'
-    }, 
+module.exports = {     
 
-    autoNewsScrappingtoDBEvery(time) {
-        const scheduler = new ToadScheduler()
-        const task = new AsyncTask(
-            'news scrapping',
-            () => {
-                return this.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(res => {
-                }).catch(err => { console.log(err) })
-            },
-            (err) => { console.log(err) })
-
-        const job = new SimpleIntervalJob({ seconds: time, }, task)
-
-        scheduler.addSimpleIntervalJob(job)
-    },
     getSongCongNews(type) {
         if (type == 'general') {
             return new Promise((resolve, reject) => {
@@ -102,13 +74,13 @@ module.exports = {
         if (type == 'general') {
             return new Promise((resolve, reject) => {
                 axios.get('https://appstore.hcmtelecom.vn/it2/externalscript.html').then(res => {
-                resolve(this.extractCaoBangData(res.data, type))
+                    resolve(this.extractCaoBangData(res.data, type))
                 })
                     .catch(err => {
                         reject(err)
                     })
             })
-        }              
+        }
     },
     extractCaoBangData: function (html, type) {
         let currentDate = new Date().getDate() + '/' + new Date().getMonth() + '/' + new Date().getFullYear()
@@ -233,7 +205,7 @@ module.exports = {
                     image: 'http://thaibinh.edu.vn' + $(elem).find('div div.left-listType4 figure a img').attr('src'),
                 });
             });
-            
+
         console.log(data)
         return data;
     },

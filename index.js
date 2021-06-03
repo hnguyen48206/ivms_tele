@@ -2,6 +2,7 @@ const express = require('express');
 const emailValidator = require("email-validator");
 var admin = require("firebase-admin");
 const news_scraper = require('./news_scraper.js')
+const { v4: uuidv4 } = require('uuid');
 
 // deploy to vercel for testing 
 // Vercel platform is event-driven, therefore not maintaining a running server,
@@ -124,10 +125,34 @@ app.post('/emailValidate', async (req, res, next) => {
   }
 });
 
+
+/////////////////////////////////////////////// CronJob scheduler////////////////////////////////
+const { ToadScheduler } = require('toad-scheduler')
+const cronJobsManager = require('./cronjobsMangers.js')
+
+const scheduler = new ToadScheduler()
+
+app.post('/setAutoNewsScrapping', async (req, res, next) => {
+  const postData = req.body;
+  postData['jobID']=uuidv4();
+  console.log(postData.jobID)
+  cronJobsManager.autoNewsScrappingtoDBEvery(postData, scheduler).then(result=>{
+    res.status(200).send('Set cron job '+ postData.jobID + ' OK')
+  })
+  .catch(err=>{
+    res.status(500).send('Set cron job '+ postData.jobID + ' Fail')
+  })
+});
+
+app.get('/removeCronJob/:jobID',  (req, res, next) =>{
+  if(cronJobsManager.cancelCronJob(req.params.jobID, scheduler))
+  res.status(200).send('Remove cron job '+ req.params.jobID + ' OK')
+  else
+  res.status(500).send('Remove cron job '+ req.params.jobID + ' Fail')
+})
+
 app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
-  // news_scraper.autoNewsScrappingtoDB(2) 
-
   // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
   startDBConnection();
 });
@@ -166,15 +191,11 @@ const dbManager = require('./mongoDB/connectionManager.js')
 //busboy is a middleware to handle parsing data sent through multipart form-data
 const Busboy = require('busboy');
 const { ObjectID } = require('bson');
-var gfs
-var dbClient = null
-var DBError
+global.gfs = null
+global.dbClient = null
 function startDBConnection() {
   dbManager.dbConnectionInit().then(client => {
     // res is DB client
-    // dbManager.findAllRecordsofaTable(res);
-    // dbManager.deleteDocuments(res);
-
     dbClient = client
     dbManager.gridFsInit(client).then(res => {
       gfs = res
@@ -266,9 +287,9 @@ app.get('/deleteFileByFileID/:fileID', function (req, res) {
 
 app.get('/manuallyTriggerDatabaseConnection', function (req, res) {
 
-  // This api is used in cased you need to start or restart connection to mongoDB.
+  // This api is used in cased you need to start or restart connection to mongoDB. And even a sleeping cloud server.
   dbManager.dbConnectionInit().then(client => {
-
+    dbClient=client;
     dbManager.gridFsInit(client).then(res => {
       gfs = res
     }).catch(err => { console.log(err) })

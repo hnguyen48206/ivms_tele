@@ -18,7 +18,8 @@ module.exports = {
                     reject(err)
                 }
                 // client.close();
-            });
+            });           
+
         })
     },
     findAllRecordsofaTable(dbClient) {
@@ -141,5 +142,9 @@ module.exports = {
         }
      
     }
+
+
+    //CronJobDBOperations
+
 }
 
