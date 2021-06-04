@@ -74,7 +74,6 @@ app.post('/caobangnews/:type', (req, res, next) => {
     res.status(500).send('News type is not valid')
 })
 
-
 app.get('/news/:page', (req, res, next) => {
   console.log(req.params.page)
   if (Number.isInteger(parseInt(req.params.page))) {
@@ -89,8 +88,6 @@ app.get('/news/:page', (req, res, next) => {
     res.send('Page number is not valid')
   }
 })
-
-
 
 app.post('/emailValidate', async (req, res, next) => {
   const postData = req.body;
