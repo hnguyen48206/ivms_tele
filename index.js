@@ -21,11 +21,18 @@ const liam = usersDb.doc('lragozzine');
 
 const PORT = process.env.PORT || 3000
 const app = express()
-
 /* JSON body parse*/
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.listen(PORT, () => {
+  console.info('Server is running on PORT:', PORT);
+  // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
+  startDBConnection();
+});
+
+module.exports= {app}
 
 
 app.post('/thaibinhnews/:type', (req, res, next) => {
@@ -40,7 +47,6 @@ app.post('/thaibinhnews/:type', (req, res, next) => {
   else
     res.status(500).send('News type is not valid')
 })
-
 
 app.post('/songcongnews/:type', (req, res, next) => {
   if (req.params.type == 'general' || req.params.type == 'medic' || req.params.type == 'edu') {
@@ -68,14 +74,6 @@ app.post('/caobangnews/:type', (req, res, next) => {
     res.status(500).send('News type is not valid')
 })
 
-app.get('/news', (req, res, next) => {
-  news_scraper.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(result => {
-    res.send(result)
-  }).catch(err => {
-    console.log(err)
-    res.send('Failed to get news')
-  })
-})
 
 app.get('/news/:page', (req, res, next) => {
   console.log(req.params.page)
@@ -92,27 +90,7 @@ app.get('/news/:page', (req, res, next) => {
   }
 })
 
-app.get('/hello', (req, res, next) => {
-  console.info('/hello call success ');
-  liam.update({
-    'name': 'abc',
-    'age': 41
-  })
-    .then(
-      result => console.log(result)
-    )
-  liam.get()
-    .then(result => {
-      console.log(result.data())
-      res.send(result.data());
 
-    })
-    .catch(err => {
-      console.log(err)
-      res.send(err);
-    })
-  // res.send('Welcome to Firebase Cloud Functions');
-});
 
 app.post('/emailValidate', async (req, res, next) => {
   const postData = req.body;
@@ -150,13 +128,6 @@ app.get('/removeCronJob/:jobID',  (req, res, next) =>{
   else
   res.status(500).send('Remove cron job '+ req.params.jobID + ' Fail')
 })
-
-app.listen(PORT, () => {
-  console.info('Server is running on PORT:', PORT);
-  // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
-  startDBConnection();
-});
-
 
 //create another express app just for proxy processing
 // const appProxy = express()
@@ -207,6 +178,8 @@ function startDBConnection() {
     });
 }
 
+
+//////////////////////////////////////////GRID Fs operations///////////////////////////////
 app.post('/uploadfile', function (req, res) {
 
   var busboy = new Busboy({ headers: req.headers });
