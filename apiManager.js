@@ -87,7 +87,7 @@ router.post('/emailValidate', async (req, res, next) => {
 /////////////////////////////////////////////// CronJob scheduler////////////////////////////////
 const { ToadScheduler } = require('toad-scheduler')
 const cronJobsManager = require('./cronjobsMangers.js')
-
+// A Middleware to handle cronjib
 const scheduler = new ToadScheduler()
 
 router.post('/setAutoNewsScrapping', async (req, res, next) => {
@@ -144,7 +144,7 @@ const Busboy = require('busboy');
 const { ObjectID } = require('bson');
 global.gfs = null
 global.dbClient = null
-global.startDBConnection= () => {
+global.startDBConnection = () => {
     dbManager.dbConnectionInit().then(client => {
         // res is DB client
         dbClient = client

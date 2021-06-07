@@ -1,6 +1,5 @@
 const express = require('express');
 var router = require('./apiManager')
-
 var admin = require("firebase-admin");
 
 
