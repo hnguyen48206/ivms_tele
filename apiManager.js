@@ -4,8 +4,8 @@ const news_scraper = require('./news_scraper.js')
 const { v4: uuidv4 } = require('uuid');
 const emailValidator = require("email-validator");
 
+
 router.use((req, res, next) => {
-    console.log("Called: ", req.path)
     next()
 })
 

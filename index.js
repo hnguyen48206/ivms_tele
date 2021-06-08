@@ -1,6 +1,7 @@
 const express = require('express');
 var router = require('./apiManager')
 var admin = require("firebase-admin");
+var cors = require('cors')
 
 
 // deploy to vercel for testing 
@@ -25,13 +26,29 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
   startDBConnection();
 });
 
 app.use(router)
+var whitelist = ['*']
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
+app.use(cors(corsOptions))
+app.get('/', (req, res, next) => {
+  res.sendFile('index.html', {
+    root: '.'
+  });
+})
 
 
 app.get('/hello', (req, res, next) => {
@@ -56,4 +73,52 @@ app.get('/hello', (req, res, next) => {
   // res.send('Welcome to Firebase Cloud Functions');
 });
 
+/////////////////////////////////////////////////////////socket.io 
+const io = require("socket.io")(server,{cors: {
+  origin: "*",
+  methods: ["GET", "POST"]
+}});
+const activeUsers = new Set();
 
+io.on("connection", function (socket) {
+  console.log("Made socket connection");
+
+  socket.on("newUser", function (data) {
+    socket.userId = data;
+    activeUsers.add(data);
+    io.emit("new user", [...activeUsers]);
+  });
+
+  socket.on("disconnect", () => {
+    activeUsers.delete(socket.userId);
+    io.emit("user disconnected", socket.userId);
+  });
+
+  socket.on("priceAlertSubscribe", function (data) {
+
+    // Data Model Expectation
+    // data = {
+    //   targetCoin: '',
+    //   alertAtPrice: ''
+    // }
+    // io.emit("chat message", data);
+
+    console.log(data)
+  });
+
+  socket.on("cancelPriceAlert", function (data) {
+
+    // Data Model Expectation
+    // data = {
+    //   alertID: ''
+    // }
+    // io.emit("chat message", data);
+
+    console.log(data)
+
+  });
+
+  // socket.on("typing", function (data) {
+  //   socket.broadcast.emit("typing", data);
+  // });
+});
