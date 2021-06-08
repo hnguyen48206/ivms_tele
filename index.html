@@ -33,7 +33,11 @@
         $(function () {
             //make connection
             console.log('ok')
-            var socket = io.connect('http://localhost:3000/')
+            //dev env
+            // var socket = io.connect('http://localhost:3000/')
+            //prod env
+            var socket = io.connect('https://fstack2.herokuapp.com/')
+
             socket.emit('getHistory', { username: 'testGetHistoryFromClientWeb' })
 
             //buttons and inputs
