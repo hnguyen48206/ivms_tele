@@ -36,11 +36,12 @@ app.use(router)
 var whitelist = ['*']
 var corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
+    // if (whitelist.indexOf(origin) !== -1) {
+    //   callback(null, true)
+    // } else {
+    //   callback(new Error('Not allowed by CORS'))
+    // }
+    callback(null, true)
   }
 }
 app.use(cors(corsOptions))
