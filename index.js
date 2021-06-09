@@ -33,17 +33,26 @@ const server = app.listen(PORT, () => {
 });
 
 app.use(router)
-var whitelist = ['*']
+// var whitelist = ['*']
+// var corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true)
+//     } else {
+//       callback(new Error('Not allowed by CORS'))
+//     }
+//     callback(null, true)
+//   },
+//   optionsSuccessStatus:200
+// }
+
 var corsOptions = {
-  origin: function (origin, callback) {
-    // if (whitelist.indexOf(origin) !== -1) {
-    //   callback(null, true)
-    // } else {
-    //   callback(new Error('Not allowed by CORS'))
-    // }
-    callback(null, true)
-  }
+  "origin": "*",
+  "methods": ["GET","HEAD","PUT","PATCH","POST","DELETE"],
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
 }
+
 app.use(cors(corsOptions))
 app.get('/', (req, res, next) => {
   res.sendFile('index.html', {
