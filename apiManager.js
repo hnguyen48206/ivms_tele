@@ -161,8 +161,10 @@ global.startDBConnection = () => {
 
 //////////////////////////////////////////GRID Fs operations///////////////////////////////
 router.post('/uploadfile', function (req, res) {
-
-    var busboy = new Busboy({ headers: req.headers });
+    //Limit file size to 6MB only
+    var busboy = new Busboy({ headers: req.headers, limits: {
+        fileSize: 6*1024*1024
+      } });
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log('got file', filename, mimetype, encoding);
