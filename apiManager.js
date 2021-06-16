@@ -162,16 +162,29 @@ global.startDBConnection = () => {
 //////////////////////////////////////////GRID Fs operations///////////////////////////////
 router.post('/uploadfile', function (req, res) {
     //Limit file size to 6MB only
-    var busboy = new Busboy({ headers: req.headers, limits: {
-        fileSize: 6*1024*1024
-      } });
+    var busboy = new Busboy({
+        headers: req.headers, limits: {
+            fileSize: 6 * 1024 * 1024
+        }
+    });
+
+    var limit_reach = false;
+    var limit_reach_err = "File is too large!";
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log('got file', filename, mimetype, encoding);
+        // If the file is larger than the set limit, then close the upload stream
+        file.on('limit', function () {
+            writeStream.emit('close')
+            limit_reach = true;
+            console.log(limit_reach_err)
+            res.status(500).send(limit_reach_err);
+        });
+
         var writeStream
         try {
             //Remove Vietnamese characters and spaces
-            let nameAfterProcessed= removeAccents(filename).replace(/\s/g, "")
+            let nameAfterProcessed = removeAccents(filename).replace(/\s/g, "")
             console.log(nameAfterProcessed)
 
             writeStream = gfs.createWriteStream({
@@ -190,7 +203,8 @@ router.post('/uploadfile', function (req, res) {
         }
     }).on('finish', function () {
         // show a link to the uploaded file
-        res.status(200).send('uploaded successfully');
+        if (!limit_reach)
+            res.status(200).send('uploaded successfully');
     });
     req.pipe(busboy);
 });
@@ -210,7 +224,7 @@ router.get('/downloadFileByFileName/:filename', function (req, res) {
 });
 
 router.get('/downloadFileByFileID/:fileID', function (req, res) {
-    //download file using file name. 
+    //download file using file ID. 
     var file_id = req.params.fileID;
 
     gfs.files.find({ _id: new ObjectID(file_id) }).toArray(function (err, files) {
@@ -231,7 +245,7 @@ router.get('/downloadFileByFileID/:fileID', function (req, res) {
 });
 
 router.get('/deleteFileByFileID/:fileID', function (req, res) {
-    //download file using file name. 
+    //delete file by FileID
     var file_id = req.params.fileID;
     gfs.remove({ _id: new ObjectID(file_id) }, (err, gridStore) => {
         if (err) {
@@ -264,26 +278,26 @@ router.get('/manuallyTriggerDatabaseConnection', function (req, res) {
 
 function removeAccents(str) {
     var AccentsMap = [
-      "aàảãáạăằẳẵắặâầẩẫấậ",
-      "AÀẢÃÁẠĂẰẲẴẮẶÂẦẨẪẤẬ",
-      "dđ", "DĐ",
-      "eèẻẽéẹêềểễếệ",
-      "EÈẺẼÉẸÊỀỂỄẾỆ",
-      "iìỉĩíị",
-      "IÌỈĨÍỊ",
-      "oòỏõóọôồổỗốộơờởỡớợ",
-      "OÒỎÕÓỌÔỒỔỖỐỘƠỜỞỠỚỢ",
-      "uùủũúụưừửữứự",
-      "UÙỦŨÚỤƯỪỬỮỨỰ",
-      "yỳỷỹýỵ",
-      "YỲỶỸÝỴ"    
+        "aàảãáạăằẳẵắặâầẩẫấậ",
+        "AÀẢÃÁẠĂẰẲẴẮẶÂẦẨẪẤẬ",
+        "dđ", "DĐ",
+        "eèẻẽéẹêềểễếệ",
+        "EÈẺẼÉẸÊỀỂỄẾỆ",
+        "iìỉĩíị",
+        "IÌỈĨÍỊ",
+        "oòỏõóọôồổỗốộơờởỡớợ",
+        "OÒỎÕÓỌÔỒỔỖỐỘƠỜỞỠỚỢ",
+        "uùủũúụưừửữứự",
+        "UÙỦŨÚỤƯỪỬỮỨỰ",
+        "yỳỷỹýỵ",
+        "YỲỶỸÝỴ"
     ];
-    for (var i=0; i<AccentsMap.length; i++) {
-      var re = new RegExp('[' + AccentsMap[i].substr(1) + ']', 'g');
-      var char = AccentsMap[i][0];
-      str = str.replace(re, char);
+    for (var i = 0; i < AccentsMap.length; i++) {
+        var re = new RegExp('[' + AccentsMap[i].substr(1) + ']', 'g');
+        var char = AccentsMap[i][0];
+        str = str.replace(re, char);
     }
     return str;
-  }
+}
 
 module.exports = router
