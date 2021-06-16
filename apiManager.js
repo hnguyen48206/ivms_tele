@@ -169,16 +169,15 @@ router.post('/uploadfile', function (req, res) {
     });
 
     var limit_reach = false;
-    var limit_reach_err = "File is too large!";
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log('got file', filename, mimetype, encoding);
-        // If the file is larger than the set limit, then close the upload stream
+        // If the file is larger than the set limit, then destroy the streaming
         file.on('limit', function () {
-            writeStream.emit('close')
+            // writeStream.emit('close')
+            writeStream.destroy(new Error('Destroyed the stream cause File was too large'))
             limit_reach = true;
-            console.log(limit_reach_err)
-            res.status(500).send(limit_reach_err);
+            res.status(500).send('Destroyed the stream cause File was too large');
         });
 
         var writeStream
@@ -195,9 +194,18 @@ router.post('/uploadfile', function (req, res) {
             console.log(error)
         }
         if (writeStream != null) {
+            writeStream.on('error', (err) => {
+                //All the info of the uploaded file has been return. Storing the fileID to your data model for later use. 
+                console.log(err)
+            });
             writeStream.on('close', (file) => {
                 //All the info of the uploaded file has been return. Storing the fileID to your data model for later use. 
                 console.log(file)
+                //check if File has been sucessfully uploaded or the stream was canceled by any reason.
+                if(limit_reach)
+                {
+                    //Delete all unessary chunks in grid fs chunks using fileID
+                }
             });
             file.pipe(writeStream);
         }
