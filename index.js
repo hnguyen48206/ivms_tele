@@ -2,6 +2,7 @@ const express = require('express');
 var router = require('./apiManager')
 var admin = require("firebase-admin");
 var cors = require('cors')
+var os = require("os");
 
 
 // deploy to vercel for testing 
@@ -30,6 +31,7 @@ const server = app.listen(PORT, () => {
   console.info('Server is running on PORT:', PORT);
   // Automatically start connection to DB right after the server goes live. Does not work on event-driven server like Vercel.
   startDBConnection();
+  console.log(os.hostname())
 });
 
 app.use(router)
@@ -83,7 +85,7 @@ app.get('/hello', (req, res, next) => {
   // res.send('Welcome to Firebase Cloud Functions');
 });
 
-/////////////////////////////////////////////////////////socket.io 
+/////////////////////////////////////////////////////////socket.io ////////////////////////////////////////
 const io = require("socket.io")(server,{cors: {
   origin: "*",
   methods: ["GET", "POST"]

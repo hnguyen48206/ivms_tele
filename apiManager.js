@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router()
 const news_scraper = require('./news_scraper.js')
 const { v4: uuidv4 } = require('uuid');
-const emailValidator = require("email-validator");
+const validator = require('validator');
 
 
 router.use((req, res, next) => {
@@ -76,7 +76,8 @@ router.post('/emailValidate', async (req, res, next) => {
     const postData = req.body;
     if (postData.email) {
         console.info('/emailValidate call success ');
-        res.json({ 'status': emailValidator.validate(postData.email) });
+        //Validator only takes string as an input param, so remember to convert everything to string first
+        res.json({ 'status': validator.isEmail(postData.email + '') });
     } else {
         console.warn('/emailValidate wrong input ');
         res.status(500).json({ 'status': 'wrong input' });
@@ -161,10 +162,11 @@ global.startDBConnection = () => {
 
 //////////////////////////////////////////GRID Fs operations///////////////////////////////
 router.post('/uploadfile', function (req, res) {
-    //Limit file size to 6MB only
+    //Limit file size to 6MB only and the maximum number of files is only one at a time
     var busboy = new Busboy({
         headers: req.headers, limits: {
-            fileSize: 1 * 1024 * 1024
+            fileSize: 6 * 1024 * 1024,
+            files:1
         }
     });
 
