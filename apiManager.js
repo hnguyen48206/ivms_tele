@@ -164,7 +164,7 @@ router.post('/uploadfile', function (req, res) {
     //Limit file size to 6MB only
     var busboy = new Busboy({
         headers: req.headers, limits: {
-            fileSize: 6 * 1024 * 1024
+            fileSize: 1 * 1024 * 1024
         }
     });
 
@@ -173,8 +173,7 @@ router.post('/uploadfile', function (req, res) {
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log('got file', filename, mimetype, encoding);
         // If the file is larger than the set limit, then destroy the streaming
-        file.on('limit', function () {
-            // writeStream.emit('close')
+        file.on('limit', function () {            
             writeStream.destroy(new Error('Destroyed the stream cause File was too large'))
             limit_reach = true;
             res.status(500).send('Destroyed the stream cause File was too large');
@@ -205,6 +204,7 @@ router.post('/uploadfile', function (req, res) {
                 if(limit_reach)
                 {
                     //Delete all unessary chunks in grid fs chunks using fileID
+                    deleteUnfinishedUploadedFile(file._id)
                 }
             });
             file.pipe(writeStream);
@@ -275,7 +275,6 @@ router.get('/manuallyTriggerDatabaseConnection', function (req, res) {
             gfs = res
         }).catch(err => { console.log(err) })
         res.status(200).send('DB kết nối ổn')
-
     })
         .catch(err => {
             console.log(err)
@@ -306,6 +305,18 @@ function removeAccents(str) {
         str = str.replace(re, char);
     }
     return str;
+}
+
+function deleteUnfinishedUploadedFile(file_id)
+{
+    gfs.remove({ _id: new ObjectID(file_id) }, (err, gridStore) => {
+        if (err) {
+            console.log('File ID:' + file_id + ' UnusedFile has been removed')
+        }
+        else {
+            console.log('File ID:' + file_id + ' UnusedFile has been removed unsucessfully')
+        }
+    });
 }
 
 module.exports = router

@@ -69,6 +69,7 @@ module.exports = {
         var gfs
         try {
             gfs = Grid(dbClient.db("sample_airbnb"), require('mongodb'));        
+         
             console.log('All set! Start uploading :)')
         } catch (error) {
             console.log(error)
