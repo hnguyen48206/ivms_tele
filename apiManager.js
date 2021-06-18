@@ -313,10 +313,10 @@ function deleteUnfinishedUploadedFile(file_id)
 {
     gfs.remove({ _id: new ObjectID(file_id) }, (err, gridStore) => {
         if (err) {
-            console.log('File ID:' + file_id + ' UnusedFile has been removed')
+            console.log(`File ID: ${file_id} UnusedFile has been removed`)
         }
         else {
-            console.log('File ID:' + file_id + ' UnusedFile has been removed unsucessfully')
+            console.log(`File ID: ${file_id} UnusedFile has been removed unsucessfully`)
         }
     });
 }
