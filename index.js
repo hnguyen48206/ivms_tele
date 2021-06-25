@@ -163,3 +163,8 @@ const run = async () => {
 
 // for(let i=0; i<10; ++i)
 run().catch(err => console.error(err))
+
+
+///////////////////////////////////////////////////APNs push notification/////////////////////////////////////
+var apns= require('./apnsPushManager')
+// apns.createNewNotification()
