@@ -4,7 +4,6 @@ var admin = require("firebase-admin");
 var cors = require('cors')
 var os = require("os");
 
-
 // deploy to vercel for testing 
 // Vercel platform is event-driven, therefore not maintaining a running server,
 // we recommend using a third-party service to schedule these tasks.
@@ -134,3 +133,33 @@ io.on("connection", function (socket) {
   //   socket.broadcast.emit("typing", data);
   // });
 });
+
+
+///////////////////////////////////////////// Worker Thread /////////////////////////////////////
+const { Worker } = require('worker_threads')
+
+const runService = (param) => {
+    return new Promise((resolve, reject) => {
+    
+        // import workerExample.js script, option is the data passing from main thread to the worker thread    
+        const worker = new Worker('./workerThreadSample.js', { workerData: param });
+        console.log(`ID của thread vừa tạo: ${worker.threadId}`)
+
+        worker.postMessage('this is the message coming from main thread')
+        //These events work when worker send messages to main thread
+        worker.on('message', resolve);
+        worker.on('error', reject);
+        worker.on('exit', (code) => {
+            if (code !== 0)
+                reject(new Error(`stopped with  ${code} exit code`));
+        })
+    })
+}
+
+const run = async () => {
+    const result = await runService('hello John Doe')
+    console.log(result);
+}
+
+// for(let i=0; i<10; ++i)
+run().catch(err => console.error(err))
