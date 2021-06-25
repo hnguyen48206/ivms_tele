@@ -174,7 +174,10 @@ router.post('/uploadfile', function (req, res) {
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log('got file', filename, mimetype, encoding);
+        //This is where you want to check filetype to make sure before going any further
+
         // If the file is larger than the set limit, then destroy the streaming
+        //There is a bug in gridfs regarding Destroy method, workaround's here: https://github.com/aheckmann/gridfs-stream/issues/153
         file.on('limit', function () {            
             writeStream.destroy(new Error('Destroyed the stream cause File was too large'))
             limit_reach = true;
@@ -196,11 +199,12 @@ router.post('/uploadfile', function (req, res) {
         }
         if (writeStream != null) {
             writeStream.on('error', (err) => {
-                //All the info of the uploaded file has been return. Storing the fileID to your data model for later use. 
+                //This event will be fired after the stream has been destroyed and before emitting Close event below
                 console.log(err)
             });
             writeStream.on('close', (file) => {
-                //All the info of the uploaded file has been return. Storing the fileID to your data model for later use. 
+                //All the info of the uploaded file has been return (both in success or fail)
+                //Storing the fileID to your data model for later use. 
                 console.log(file)
                 //check if File has been sucessfully uploaded or the stream was canceled by any reason.
                 if(limit_reach)
