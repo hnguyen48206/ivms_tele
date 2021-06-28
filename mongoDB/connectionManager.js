@@ -108,8 +108,7 @@ module.exports = {
                     { session });
                 console.log(`${usersUpdateResults.matchedCount} document(s) found in the users collection with the email address ${userEmail}.`);
                 console.log(`${usersUpdateResults.modifiedCount} document(s) was/were updated to include the reservation.`);
-     
-     
+          
                 const isListingReservedResults = await listingsAndReviewsCollection.findOne(
                     { name: nameOfListing, datesReserved: { $in: reservationDates } },
                     { session });
