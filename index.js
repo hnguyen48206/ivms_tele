@@ -49,7 +49,7 @@ app.use(router)
 
 var corsOptions = {
   "origin": "*",
-  "methods": ["GET","HEAD","PUT","PATCH","POST","DELETE"],
+  "methods": ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   "preflightContinue": false,
   "optionsSuccessStatus": 204
 }
@@ -85,86 +85,140 @@ app.get('/hello', (req, res, next) => {
 });
 
 /////////////////////////////////////////////////////////socket.io ////////////////////////////////////////
-const io = require("socket.io")(server,{cors: {
-  origin: "*",
-  methods: ["GET", "POST"]
-}});
-const activeUsers = new Set();
+// const io = require("socket.io")(server, {
+//   cors: {
+//     origin: "*",
+//     methods: ["GET", "POST"]
+//   }
+// });
+// const activeUsers = new Set();
 
-io.on("connection", function (socket) {
-  console.log("Made socket connection");
+// io.on("connection", function (socket) {
+//   console.log("Made socket connection");
 
-  socket.on("newUser", function (data) {
-    socket.userId = data;
-    activeUsers.add(data);
-    io.emit("new user", [...activeUsers]);
-  });
+//   socket.on("newUser", function (data) {
+//     socket.userId = data;
+//     activeUsers.add(data);
+//     io.emit("new user", [...activeUsers]);
+//   });
 
-  socket.on("disconnect", () => {
-    activeUsers.delete(socket.userId);
-    io.emit("user disconnected", socket.userId);
-  });
+//   socket.on("disconnect", () => {
+//     activeUsers.delete(socket.userId);
+//     io.emit("user disconnected", socket.userId);
+//   });
 
-  socket.on("priceAlertSubscribe", function (data) {
+//   socket.on("priceAlertSubscribe", function (data) {
 
-    // Data Model Expectation
-    // data = {
-    //   targetCoin: '',
-    //   alertAtPrice: ''
-    // }
-    // io.emit("chat message", data);
+//     // Data Model Expectation
+//     // data = {
+//     //   targetCoin: '',
+//     //   alertAtPrice: ''
+//     // }
+//     // io.emit("chat message", data);
 
-    console.log(data)
-  });
+//     console.log(data)
+//   });
 
-  socket.on("cancelPriceAlert", function (data) {
+//   socket.on("cancelPriceAlert", function (data) {
 
-    // Data Model Expectation
-    // data = {
-    //   alertID: ''
-    // }
-    // io.emit("chat message", data);
+//     // Data Model Expectation
+//     // data = {
+//     //   alertID: ''
+//     // }
+//     // io.emit("chat message", data);
 
-    console.log(data)
+//     console.log(data)
 
-  });
+//   });
 
-  // socket.on("typing", function (data) {
-  //   socket.broadcast.emit("typing", data);
-  // });
-});
+//   // socket.on("typing", function (data) {
+//   //   socket.broadcast.emit("typing", data);
+//   // });
+// });
 
 
 ///////////////////////////////////////////// Worker Thread /////////////////////////////////////
-const { Worker } = require('worker_threads')
+// const { Worker } = require('worker_threads')
 
-const runService = (param) => {
-    return new Promise((resolve, reject) => {
-    
-        // import workerExample.js script, option is the data passing from main thread to the worker thread    
-        const worker = new Worker('./workerThreadSample.js', { workerData: param });
-        console.log(`ID của thread vừa tạo: ${worker.threadId}`)
+// const runService = (param) => {
+//     return new Promise((resolve, reject) => {
 
-        worker.postMessage('this is the message coming from main thread')
-        //These events work when worker send messages to main thread
-        worker.on('message', resolve);
-        worker.on('error', reject);
-        worker.on('exit', (code) => {
-            if (code !== 0)
-                reject(new Error(`stopped with  ${code} exit code`));
-        })
-    })
-}
+//         // import workerExample.js script, option is the data passing from main thread to the worker thread    
+//         const worker = new Worker('./workerThreadSample.js', { workerData: param });
+//         console.log(`ID của thread vừa tạo: ${worker.threadId}`)
 
-const run = async () => {
-    const result = await runService('hello John Doe')
-    console.log(result);
-}
+//         worker.postMessage('this is the message coming from main thread')
+//         //These events work when worker send messages to main thread
+//         worker.on('message', resolve);
+//         worker.on('error', reject);
+//         worker.on('exit', (code) => {
+//             if (code !== 0)
+//                 reject(new Error(`stopped with  ${code} exit code`));
+//         })
+//     })
+// }
 
-// for(let i=0; i<10; ++i)
-run().catch(err => console.error(err))
+// const run = async () => {
+//     const result = await runService('hello John Doe')
+//     console.log(result);
+// }
+
+// // for(let i=0; i<10; ++i)
+// run().catch(err => console.error(err))
 
 
 ///////////////////////////////////////////////////APNs push notification/////////////////////////////////////
 // var apns= require('./apnsPushManager')
 // apns.createNewNotification()
+
+
+
+
+
+///////////////////////////////HLS streaming ///////////////////////////////
+// var fs = require('fs');
+// app.get('/videos/*', (req, res, next) => {
+//   console.log(req.url)
+//   var filePath = '.' + req.url;
+//   console.log(filePath)
+//   fs.readFile(filePath, function (error, content) {
+//     if (error) {
+//       console.log(error)
+//       res.status(500).send('Failed to read file')
+//     }
+//     else {
+//       console.log(content)
+//       res.status(200).send(content);
+//     }
+//   });
+// });
+
+
+/////////////////////////////////////FFMPEG//////////////////////////////////////////////////
+// var ffmpeg = require('./ffmpegStreaming')
+// app.get('/stream/abc.flv', (req, res, next) => {
+//   ffmpeg()
+//   .input('http://14.225.23.40:80/streams/60f8fa790655a40011d55419/stream/60f8fa790655a40011d55419.m3u8')
+//   .outputOptions([
+//     '-vcodec libx265',
+//     '-f flv'
+// ])
+//   .on('start', function(commandLine) {
+//     console.log('Running ffmpeg with command: ' + commandLine);
+//   })
+//   .on('codecData', function(data) {
+//     console.log('Input is ' + data.audio + ' audio ' + 'with ' + data.video + ' video');
+//   })
+//   .on('progress', function(progress) {
+//     console.log('Processing: ' + progress.percent + '% done');
+//   })
+//   .on('error', function(err, stdout, stderr) {
+//     console.log('Error while Processing video: ' + err.message);
+//   })
+//   .on('end', function() {
+//     console.log('Transcoding succeeded!');
+//   })
+//   // .save('http://localhost:3000/stream/abc.flv').run();
+//   .pipe(res, {end: true});
+// });
+
