@@ -9,6 +9,54 @@ router.use((req, res, next) => {
     next()
 })
 
+
+
+////////////////////////////////// IP MAC Test /////////////////////////////////////
+router.post('/ipmac/student/create', (req, res, next) => {
+    const postData = req.body;
+    if (postData.name == '' || postData.status == '' || postData.name == null || postData.status == null) {
+        res.status(500).json({ 'status': 'wrong input' });
+    } else {
+        //check if user already exist in database
+        collection.find({ HoTen: postData.name }).toArray(function (err, docs) {
+            //test to see if the error is null or not. Null means no error.
+            assert.equal(err, null);
+            console.log('Found the following records');
+            console.log(docs);
+            if (docs.lenght > 0)
+                res.status(500).json({ 'status': 'user already exist' });
+            else {
+                //insert user to database
+                let dbcollection = dbClient.db("sample_airbnb").collection("ipmac");
+                dbcollection.insertOne({ HoTen: postData.name, TrangThai: postData.status, HinhNho: null, HinhLon: null }).then(res => {
+                    console.log(res)
+                    console.log('Lưu dữ liệu thành công')
+                    res.status(200).json({ 'status': 'insert ok' });
+                })
+                    .catch(err => {
+                        console.log(err)
+                        res.status(500).json({ 'status': 'unknown' });
+                    })
+            }
+        });
+
+    }
+})
+router.get('/ipmac/student/getall', (req, res, next) => {
+    const collection = dbClient.db("sample_airbnb").collection("ipmac");
+    // perform actions on the collection object
+    collection.find({}).toArray(function (err, docs) {
+        //test to see if the error is null or not. Null means no error.
+        assert.equal(err, null);
+        console.log('Found the following records');
+        console.log(docs);
+        res.status(200).json(docs);
+    });
+})
+
+
+
+
 router.get('/news', (req, res, next) => {
     news_scraper.getNews('https://tuoitre.vn/tin-moi-nhat.htm').then(result => {
         res.send(result)
@@ -93,9 +141,21 @@ const scheduler = new ToadScheduler()
 
 router.post('/setAutoNewsScrapping', async (req, res, next) => {
     const postData = req.body;
-    postData['jobID'] = uuidv4();
+    postData['jobID'] = 'news' + uuidv4();
     console.log(postData.jobID)
     cronJobsManager.autoNewsScrappingtoDBEvery(postData, scheduler).then(result => {
+        res.status(200).send('Set cron job ' + postData.jobID + ' OK')
+    })
+        .catch(err => {
+            res.status(500).send('Set cron job ' + postData.jobID + ' Fail')
+        })
+});
+
+router.post('/setEMAWatcher', async (req, res, next) => {
+    const postData = req.body;
+    postData['jobID'] = 'ema' + uuidv4();
+    console.log(postData.jobID)
+    cronJobsManager.emaWatcher(postData, scheduler).then(result => {
         res.status(200).send('Set cron job ' + postData.jobID + ' OK')
     })
         .catch(err => {
@@ -166,7 +226,7 @@ router.post('/uploadfile', function (req, res) {
     var busboy = new Busboy({
         headers: req.headers, limits: {
             fileSize: 6 * 1024 * 1024,
-            files:1
+            files: 1
         }
     });
 
@@ -178,7 +238,7 @@ router.post('/uploadfile', function (req, res) {
 
         // If the file is larger than the set limit, then destroy the streaming
         //There is a bug in gridfs regarding Destroy method, workaround's here: https://github.com/aheckmann/gridfs-stream/issues/153
-        file.on('limit', function () {            
+        file.on('limit', function () {
             writeStream.destroy(new Error('Destroyed the stream cause File was too large'))
             limit_reach = true;
             res.status(500).send('Destroyed the stream cause File was too large');
@@ -207,8 +267,7 @@ router.post('/uploadfile', function (req, res) {
                 //Storing the fileID to your data model for later use. 
                 console.log(file)
                 //check if File has been sucessfully uploaded or the stream was canceled by any reason.
-                if(limit_reach)
-                {
+                if (limit_reach) {
                     //Delete all unessary chunks in grid fs chunks using fileID
                     deleteUnfinishedUploadedFile(file._id)
                 }
@@ -313,8 +372,7 @@ function removeAccents(str) {
     return str;
 }
 
-function deleteUnfinishedUploadedFile(file_id)
-{
+function deleteUnfinishedUploadedFile(file_id) {
     gfs.remove({ _id: new ObjectID(file_id) }, (err, gridStore) => {
         if (err) {
             console.log(`File ID: ${file_id} UnusedFile has been removed`)

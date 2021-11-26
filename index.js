@@ -176,23 +176,38 @@ app.get('/hello', (req, res, next) => {
 
 
 ///////////////////////////////HLS streaming ///////////////////////////////
-// var fs = require('fs');
-// app.get('/videos/*', (req, res, next) => {
-//   console.log(req.url)
-//   var filePath = '.' + req.url;
-//   console.log(filePath)
-//   fs.readFile(filePath, function (error, content) {
-//     if (error) {
-//       console.log(error)
-//       res.status(500).send('Failed to read file')
-//     }
-//     else {
-//       console.log(content)
-//       res.status(200).send(content);
-//     }
-//   });
-// });
+var fs = require('fs');
+app.get('/videos/hls/*', (req, res, next) => {
+  console.log(req.url)
+  var filePath = '.' + req.url;
+  console.log(filePath)
+  fs.readFile(filePath, function (error, content) {
+    if (error) {
+      console.log(error)
+      res.status(500).send('Failed to read file')
+    }
+    else {
+      console.log(content)
+      res.status(200).send(content);
+    }
+  });
+});
 
+app.get('/videos/dash/*', (req, res, next) => {
+  console.log(req.url)
+  var filePath = '.' + req.url;
+  console.log(filePath)
+  fs.readFile(filePath, function (error, content) {
+    if (error) {
+      console.log(error)
+      res.status(500).send('Failed to read file')
+    }
+    else {
+      console.log(content)
+      res.status(200).send(content);
+    }
+  });
+});
 
 /////////////////////////////////////FFMPEG//////////////////////////////////////////////////
 // var ffmpeg = require('./ffmpegStreaming')
