@@ -3,6 +3,7 @@ var router = express.Router()
 const news_scraper = require('./news_scraper.js')
 const { v4: uuidv4 } = require('uuid');
 const validator = require('validator');
+const assert = require('assert');
 
 
 router.use((req, res, next) => {
@@ -17,19 +18,20 @@ router.post('/ipmac/student/create', (req, res, next) => {
     if (postData.name == '' || postData.status == '' || postData.name == null || postData.status == null) {
         res.status(500).json({ 'status': 'wrong input' });
     } else {
+        let dbcollection = dbClient.db("sample_airbnb").collection("ipmac");
+
         //check if user already exist in database
-        collection.find({ HoTen: postData.name }).toArray(function (err, docs) {
+        dbcollection.find({ HoTen: postData.name }).toArray(function (err, docs) {
             //test to see if the error is null or not. Null means no error.
             assert.equal(err, null);
             console.log('Found the following records');
-            console.log(docs);
-            if (docs.lenght > 0)
+            console.log(docs.length);
+            if (docs.length > 0)
                 res.status(500).json({ 'status': 'user already exist' });
             else {
                 //insert user to database
-                let dbcollection = dbClient.db("sample_airbnb").collection("ipmac");
-                dbcollection.insertOne({ HoTen: postData.name, TrangThai: postData.status, HinhNho: null, HinhLon: null }).then(res => {
-                    console.log(res)
+                dbcollection.insertOne({ HoTen: postData.name, TrangThai: postData.status, HinhNho: null, HinhLon: null }).then(result => {
+                    console.log(result)
                     console.log('Lưu dữ liệu thành công')
                     res.status(200).json({ 'status': 'insert ok' });
                 })
@@ -54,7 +56,111 @@ router.get('/ipmac/student/getall', (req, res, next) => {
     });
 })
 
+router.post('/ipmac/uploadfile/:studentname/:imagesize', function (req, res) {
 
+    if (req.params.imagesize != 'small' && req.params.imagesize != 'large')
+        res.status(500).send('Invalid image size')
+    else {
+        //check if student exist
+        let dbcollection = dbClient.db("sample_airbnb").collection("ipmac");
+
+        dbcollection.find({ HoTen: req.params.studentname }).toArray(function (err, docs) {
+            //test to see if the error is null or not. Null means no error.
+            assert.equal(err, null);
+            console.log('Found the following records');
+            console.log(docs.length);
+            if (docs.length > 0) {
+                //cho phép upload
+                //Limit file size to 6MB only and the maximum number of files is only one at a time
+                var busboy = new Busboy({
+                    headers: req.headers, limits: {
+                        fileSize: 6 * 1024 * 1024,
+                        files: 1
+                    }
+                });
+
+                var limit_reach = false;
+
+                busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+                    console.log('got file', filename, mimetype, encoding);
+                    //This is where you want to check filetype to make sure before going any further
+                    if (mimetype != 'image/png' && mimetype != 'image/jpeg' && mimetype != 'image/jpg')
+                        res.status(500).json({ 'status': 'file type is not supported' });
+                    else {
+                        // If the file is larger than the set limit, then destroy the streaming
+                        //There is a bug in gridfs regarding Destroy method, workaround's here: https://github.com/aheckmann/gridfs-stream/issues/153
+                        file.on('limit', function () {
+                            writeStream.destroy(new Error('Destroyed the stream cause File was too large'))
+                            limit_reach = true;
+                            res.status(500).send('Destroyed the stream cause File was too large');
+                        });
+
+                        var writeStream
+                        let nameAfterProcessed
+                        try {
+                            //Remove Vietnamese characters and spaces
+                            nameAfterProcessed = new Date().getTime() + removeAccents(filename).replace(/\s/g, "")
+                            console.log('name after processed', nameAfterProcessed)
+
+                            writeStream = gfs.createWriteStream({
+                                filename: nameAfterProcessed,
+                                content_type: mimetype,
+                            });
+                        } catch (error) {
+                            console.log(error)
+                        }
+                        if (writeStream != null) {
+                            writeStream.on('error', (err) => {
+                                //This event will be fired after the stream has been destroyed and before emitting Close event below
+                                console.log(err)
+                            });
+                            writeStream.on('close', (file) => {
+                                //All the info of the uploaded file has been return (both in success or fail)
+                                //Storing the fileID to your data model for later use. 
+                                console.log(file)
+                                //check if File has been sucessfully uploaded or the stream was canceled by any reason.
+                                if (limit_reach) {
+                                    //Delete all unessary chunks in grid fs chunks using fileID
+                                    deleteUnfinishedUploadedFile(file._id)
+                                }
+                                storeImageToStudentRecord(req.params.studentname, '/downloadFileByFileName/' + nameAfterProcessed, req.params.imagesize)
+                            });
+                            file.pipe(writeStream);
+                        }
+                    }
+
+                }).on('finish', function () {
+                    // show a link to the uploaded file
+                    if (!limit_reach)
+                        res.status(200).send('uploaded successfully');
+                });
+                req.pipe(busboy);
+            }
+            else {
+                res.status(500).json({ 'status': 'no student found' });
+            }
+        });
+    }
+
+
+});
+
+function storeImageToStudentRecord(studentname, url, type) {
+    let dbcollection = dbClient.db("sample_airbnb").collection("ipmac");
+    var myquery = { HoTen: studentname };
+    var newvalues
+    if (type == 'small')
+        newvalues = { $set: { HinhNho: url } };
+    else
+        newvalues = { $set: { HinhLon: url } };
+
+    dbcollection.updateOne(myquery, newvalues, function (err, res) {
+        if (err) throw err;
+        console.log("1 document updated");
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 router.get('/news', (req, res, next) => {
@@ -245,10 +351,11 @@ router.post('/uploadfile', function (req, res) {
         });
 
         var writeStream
+        let nameAfterProcessed
         try {
             //Remove Vietnamese characters and spaces
-            let nameAfterProcessed = removeAccents(filename).replace(/\s/g, "")
-            console.log(nameAfterProcessed)
+            nameAfterProcessed = removeAccents(filename).replace(/\s/g, "") + new Date().toTimeString()
+            console.log('name after processed', nameAfterProcessed)
 
             writeStream = gfs.createWriteStream({
                 filename: nameAfterProcessed,
@@ -271,6 +378,11 @@ router.post('/uploadfile', function (req, res) {
                     //Delete all unessary chunks in grid fs chunks using fileID
                     deleteUnfinishedUploadedFile(file._id)
                 }
+                else {
+                    //save file to DB
+
+                }
+
             });
             file.pipe(writeStream);
         }
