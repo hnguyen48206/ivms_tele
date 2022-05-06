@@ -429,6 +429,19 @@ router.get('/downloadFileByFileID/:fileID', function (req, res) {
     });
 });
 
+router.get('/deleteFileByFileName/:filename', function (req, res) {
+    let condition = { "filename": req.params.filename }
+    gfs.remove(condition, (err, gridStore) => {
+        if (err) {
+            res.status(404).send('File Not Found');
+            return
+        }
+        else {
+            res.status(200).send('File:' + req.params.filename + 'has been removed from Database');
+        }
+    });
+});
+
 router.get('/deleteFileByFileID/:fileID', function (req, res) {
     //delete file by FileID
     var file_id = req.params.fileID;
