@@ -337,6 +337,7 @@ router.post('/uploadfile', function (req, res) {
     });
 
     var limit_reach = false;
+    let nameAfterProcessed
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log('got file', filename, mimetype, encoding);
@@ -351,7 +352,6 @@ router.post('/uploadfile', function (req, res) {
         });
 
         var writeStream
-        let nameAfterProcessed
         try {
             //Remove Vietnamese characters and spaces
             nameAfterProcessed = removeAccents(filename).replace(/\s/g, "") + new Date().toTimeString()
@@ -389,7 +389,7 @@ router.post('/uploadfile', function (req, res) {
     }).on('finish', function () {
         // show a link to the uploaded file
         if (!limit_reach)
-            res.status(200).send('uploaded successfully');
+            res.status(200).send({message: 'uploaded successfully', data:{fileName:nameAfterProcessed}});
     });
     req.pipe(busboy);
 });
