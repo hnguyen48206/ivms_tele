@@ -1,18 +1,18 @@
 var express = require('express');
 var router = express.Router()
-const validator = require('validator');
+const { celebrate, Joi } = require('celebrate');
+
 router.use((req, res, next) => {
     next()
 })
-router.post('/emailValidate', async (req, res, next) => {
+router.post('/emailValidate',
+celebrate({
+    body: Joi.object({
+      email: Joi.string().required().email()
+        })
+  }),
+async (req, res, next) => {
     const postData = req.body;
-    if (postData.email) {
-        console.info('/emailValidate call success ');
-        //Validator only takes string as an input param, so remember to convert everything to string first
-        res.json({ 'status': validator.isEmail(postData.email + '') });
-    } else {
-        console.warn('/emailValidate wrong input ');
-        res.status(500).json({ 'status': 'wrong input' });
-    }
+    res.send(`This email is valid ${postData.email}`);
 });
 module.exports = router
