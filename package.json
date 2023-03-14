@@ -10,22 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apn": "^2.2.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "busboy": "^0.3.1",
-    "cheerio": "^1.0.0-rc.6",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
     "express": "^4.17.1",
-    "firebase-admin": "^9.5.0",
-    "fluent-ffmpeg": "^2.1.2",
-    "gridfs-stream": "^1.1.1",
-    "http-proxy-middleware": "^1.2.0",
-    "mongodb": "^3.6.6",
-    "node-cron": "^3.0.0",
     "nodemon": "^2.0.7",
-    "socket.io": "^4.1.2",
-    "toad-scheduler": "^1.3.0",
     "uuid": "^8.3.2",
     "validator": "^13.6.0"
   }
