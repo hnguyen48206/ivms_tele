@@ -20,7 +20,7 @@ app.use(custom({
 }));
 app.use(helmet()); //For extra network security
 app.use(compression()); //For transport data compression
-app.use(morgan("common")); //For logging
+app.use(morgan(`:remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"`)); //For logging
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/home',home_router);
