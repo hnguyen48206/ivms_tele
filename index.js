@@ -13,6 +13,7 @@ var custom = require('./utilities/sampleMiddleware')
 //Routers
 var home_router = require('./routers/home');
 var email_router = require('./routers/email');
+var tele_router = require('./routers/tele');
 
 //custom middleware
 app.use(custom({
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/home',home_router);
 app.use('/email',email_router);
+app.use('/tele',tele_router);
 app.use(errors()); //For handling celebrate error, must be put last in the middleware chain for it to work.
 
 var corsOptions = {
@@ -37,6 +39,7 @@ app.use(cors(corsOptions))
 app.listen(process.env.PORT || 3000, () => {
   console.info('Server is running on PORT:', process.env.PORT || 3000);
 });
+
 
 
 
