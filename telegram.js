@@ -230,8 +230,7 @@ async function autoCheck() {
         ])
 
     if (currentCPUStatus_data != null) {
-        let tmp = Object.assign({}, currentCPUStatus_data);
-        console.log('-------------------------------',currentCPUStatus_data)
+        let tmp = JSON.stringify(currentCPUStatus_data.cpus);
         let currentTotalLoad = 0;
         let fullMessage = `*************************** CPUs OVER ${process.env.CPU_UPPER_LIMIT}% ****************************** \n
         ********* SERVER: GATEWAY - ${process.env.GATEWAY_IP} *********\n
