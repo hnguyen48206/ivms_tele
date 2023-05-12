@@ -257,7 +257,7 @@ async function autoCheck() {
         ********* SERVER: GATEWAY - ${process.env.GATEWAY_IP} *********\n
         `;
         currentDiskstatus_data.forEach(disk => {
-            if (parseFloat(disk._capacity) > process.env.DISK_UPPER_LIMIT) {
+            if (parseFloat(disk._capacity) > process.env.DISK_UPPER_LIMIT && !disk._filesystem.includes('loop')) {
                 fullMessage = fullMessage + JSON.stringify(disk, null, '\t') + '\n';
             }
         });
