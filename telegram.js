@@ -36,11 +36,11 @@ async function initTele() {
                 let sql = `select * from Users where TeleID="${msg.chat.id}"`
                 runSelectQuery(sql).then(res => {
                     if (res.length == 0) {
-                        runquery(`INSERT INTO Users (TeleID)
-                        VALUES (?)`,
-                            [msg.chat.id]).then(res => {
+                        runquery(`INSERT INTO Users (TeleID, WhiteList)
+                        VALUES (?,?)`,
+                            [msg.chat.id, 1]).then(res => {
                                 console.log('Insert new client ok.')
-                                global.listOfClients.push(msg.chat.id);
+                                global.clientWhiteList.push(msg.chat.id);
                             });
                     }
                 }).catch(err => {
