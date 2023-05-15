@@ -3,6 +3,7 @@ const token = process.env.TELE_TOKEN || null;
 var bot = null;
 const diskInfo = require('node-disk-info');
 const si = require('systeminformation');
+const lodash = require('lodash');
 var botErrMessage = `Xin lỗi. Hệ thống đã gặp lỗi, xin vui lòng thử lại.`;
 var currentDiskstatus_data, currentCPUStatus_data, currentDockerStatus_data, currentRAMStatus_data = null;
 var currentDiskstatus, currentSystemStatus, currentDockerStatus, currentRAMStatus, currentCPUStatus = '';
@@ -274,6 +275,7 @@ async function autoCheck() {
             let fullMessage = `*************************** RAM OVER ${process.env.RAM_UPPER_LIMIT}% ****************************** \n
             ********* SERVER: GATEWAY - ${process.env.GATEWAY_IP} *********\n
             `;
+             
             fullMessage = fullMessage + JSON.stringify(currentRAMStatus_data, null, '\t') + '\n';
             global.listOfClients.forEach(clientID => {
                 bot.sendMessage(clientID, fullMessage);
@@ -353,7 +355,7 @@ function get_all(clientID, isSend) {
 async function get_currentDiskstatus(clientID, isSend) {
     try {
         let disks = await diskInfo.getDiskInfo();
-        currentDiskstatus_data = disks;
+        currentDiskstatus_data = lodash.cloneDeep(disks);
         if (disks) {
             let fullMessage = `------------------------------------ DISKs ---------------------------------- \n
             --------- SERVER: GATEWAY - ${process.env.GATEWAY_IP} ---------\n
@@ -381,7 +383,7 @@ async function get_currentSystemStatus(clientID, isSend) {
     try {
         //get CPUs info
         let data = await si.currentLoad();
-        currentCPUStatus_data = Object.create(data);
+        currentCPUStatus_data = lodash.cloneDeep(data);
         let cpuMessage = ''
         for (var i = 0; i < data.cpus.length; i++) {
             let validKeys = ['load', 'loadUser', 'loadSystem'];
@@ -392,7 +394,7 @@ async function get_currentSystemStatus(clientID, isSend) {
         //get RAM info
         data = await si.mem();
         data['used_by_percent'] = Math.round(data.used / data.total * 100);
-        currentRAMStatus_data = Object.create(data);
+        currentRAMStatus_data = lodash.cloneDeep(data);
         currentRAMStatus = JSON.stringify(data, null, '\t')
         let fullMessage = `--------- SERVER: GATEWAY - ${process.env.GATEWAY_IP} ---------\n` +
             '------------------------------------ CPU ---------------------------------- \n' +
@@ -415,7 +417,7 @@ async function get_currentSystemStatus(clientID, isSend) {
 async function get_currentDockerStatus(clientID, isSend) {
     try {
         let data = await si.dockerContainers(true);
-        currentDockerStatus_data = data.slice();
+        currentDockerStatus_data = lodash.cloneDeep(data);
         let fullMessage = `------------------------------------ SERVICES ---------------------------------- \n
         ` + `--------- SERVER: GATEWAY - ${process.env.GATEWAY_IP} ---------\n`;
         let validKeys = ['name', 'createdAt', 'startedAt', 'finishedAt', 'state', 'restartCount'];
