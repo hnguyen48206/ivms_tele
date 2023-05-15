@@ -477,12 +477,12 @@ function runSelectQuery(sql, params = []) {
         })
     })
 }
-function sendLargeMessage(clientID, message)
+async function sendLargeMessage(clientID, message)
 {
     let res = chunkSubstr(message)
-    for(let i=res.length-1; i>=0; --i)
+    for(let i=0; i<res.length; ++i)
     {
-        bot.sendMessage(clientID, res[i]);
+        await bot.sendMessage(clientID, res[i]);
     }
 }
 function chunkSubstr(str) {
