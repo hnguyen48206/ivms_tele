@@ -187,26 +187,26 @@ async function createServer(serverName, ip = null) {
             return Promise.resolve(true)
         }
         else
-            Promise.resolve(false)
+            return Promise.resolve(false)
     }
     else
-        Promise.resolve(false)
+        return Promise.resolve(false)
 }
 async function deleteServer(serverName) {
     let server = await runquery(`DELETE FROM Servers where ServerName='${serverName}' and ServerName!='gateway'`);
     if (server) {
-        Promise.resolve(true)
+        return Promise.resolve(true)
     }
     else
-        Promise.resolve(false)
+        return Promise.resolve(false)
 }
 async function getAllServer() {
     let server = await runSelectQuery(`SELECT * FROM Servers`);
     if (server) {
-        Promise.resolve(true)
+        return Promise.resolve(server)
     }
     else
-        Promise.resolve(false)
+        return Promise.resolve(null)
 }
 function showGuideline(clientID) {
     let text =

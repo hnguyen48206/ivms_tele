@@ -64,7 +64,8 @@ router.delete('/del-server/:serverName',
 
 router.get('/server',
     async (req, res, next) => {
-        let data = await teleBot.getAllServer()
+        let data = await teleBot.getAllServer();
+        console.log(data)
         if (data)
             res.send(data);
         else
