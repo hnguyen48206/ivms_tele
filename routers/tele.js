@@ -61,6 +61,16 @@ router.delete('/del-server/:serverName',
         res.send('Delete Server Success');
     });
 
+
+router.get('/server',
+    async (req, res, next) => {
+        let data = await teleBot.getAllServer()
+        if (data)
+            res.send(data);
+        else
+            res.status(500).send('Server Error')
+    });
+
 router.post('/get-log',
     celebrate({
         body: Joi.object({

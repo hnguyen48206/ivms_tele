@@ -200,6 +200,14 @@ async function deleteServer(serverName) {
     else
         Promise.resolve(false)
 }
+async function getAllServer() {
+    let server = await runSelectQuery(`SELECT * FROM Servers`);
+    if (server) {
+        Promise.resolve(true)
+    }
+    else
+        Promise.resolve(false)
+}
 function showGuideline(clientID) {
     let text =
         `<b>Các câu lệnh của hệ thống</b>\n
@@ -507,6 +515,7 @@ module.exports = {
     clearLogs: clearLogs,
     getLogs: getLogs,
     createServer: createServer,
-    deleteServer:deleteServer
+    deleteServer:deleteServer,
+    getAllServer:getAllServer
 };
 
