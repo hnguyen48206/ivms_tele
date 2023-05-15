@@ -144,10 +144,10 @@ function writeLogs(serverName, type, logs) {
             `;
             fullMessage = fullMessage + JSON.stringify(JSON.parse(logs), null, '\t') + '\n';
             global.listOfClients.forEach(clientID => {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
             });
             global.clientWhiteList.forEach(clientID => {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
             })
         }
     } catch (error) {
@@ -212,7 +212,7 @@ function showGuideline(clientID) {
     <b><i>start auto</i></b> : nhận tin nhắn định kỳ.\n
     <b><i>unsubscribe</i></b> : ngưng nhận tất cả các tin báo (để khôi phục dịch vụ, gõ lệnh hi).\n
     `
-    bot.sendMessage(clientID, text, { parse_mode: "HTML" });
+    sendLargeMessage(clientID, text, { parse_mode: "HTML" });
 }
 async function removeUser(clientID) {
     global.listOfClients = global.listOfClients.filter(client => client != clientID)
@@ -246,10 +246,10 @@ async function autoCheck() {
             
             writeLogs('gateway', 'cpus', JSON.stringify(tmp));
             global.listOfClients.forEach(clientID => {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
             });
             global.clientWhiteList.forEach(clientID => {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
             })
         }
     }
@@ -263,10 +263,10 @@ async function autoCheck() {
             }
         });
         global.listOfClients.forEach(clientID => {
-            bot.sendMessage(clientID, fullMessage);
+            sendLargeMessage(clientID, fullMessage);
         });
         global.clientWhiteList.forEach(clientID => {
-            bot.sendMessage(clientID, fullMessage);
+            sendLargeMessage(clientID, fullMessage);
         })
         writeLogs('gateway', 'disks', JSON.stringify(currentDiskstatus_data));
     }
@@ -278,10 +278,10 @@ async function autoCheck() {
              
             fullMessage = fullMessage + JSON.stringify(currentRAMStatus_data, null, '\t') + '\n';
             global.listOfClients.forEach(clientID => {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
             });
             global.clientWhiteList.forEach(clientID => {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
             })
             writeLogs('gateway', 'ram', JSON.stringify(currentRAMStatus_data));
         }
@@ -327,12 +327,12 @@ async function send_logs_periodically() {
         ])
     if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
         global.listOfClients.forEach(clientID => {
-            bot.sendMessage(clientID, currentDiskstatus);
-            bot.sendMessage(clientID, currentSystemStatus);
-            bot.sendMessage(clientID, currentDockerStatus);
+            sendLargeMessage(clientID, currentDiskstatus);
+            sendLargeMessage(clientID, currentSystemStatus);
+            sendLargeMessage(clientID, currentDockerStatus);
         });
     // else
-    //     bot.sendMessage(clientID, botErrMessage);
+    //     sendLargeMessage(clientID, botErrMessage);
     cleanMessage();
 }
 function get_all(clientID, isSend) {
@@ -342,12 +342,12 @@ function get_all(clientID, isSend) {
     if (isSend) {
         setTimeout(() => {
             if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '') {
-                bot.sendMessage(clientID, currentDiskstatus);
-                bot.sendMessage(clientID, currentSystemStatus);
-                bot.sendMessage(clientID, currentDockerStatus);
+                sendLargeMessage(clientID, currentDiskstatus);
+                sendLargeMessage(clientID, currentSystemStatus);
+                sendLargeMessage(clientID, currentDockerStatus);
             }
             else
-                bot.sendMessage(clientID, botErrMessage);
+                sendLargeMessage(clientID, botErrMessage);
             cleanMessage();
         }, 5000);
     }
@@ -366,14 +366,14 @@ async function get_currentDiskstatus(clientID, isSend) {
 
             currentDiskstatus = fullMessage;
             if (isSend) {
-                bot.sendMessage(clientID, fullMessage);
+                sendLargeMessage(clientID, fullMessage);
                 cleanMessage();
             }
         }
     } catch (error) {
         console.log(error);
         if (isSend) {
-            bot.sendMessage(clientID, botErrMessage);
+            sendLargeMessage(clientID, botErrMessage);
             cleanMessage();
         }
     }
@@ -403,11 +403,11 @@ async function get_currentSystemStatus(clientID, isSend) {
             currentRAMStatus;
         currentSystemStatus = fullMessage;
         if (isSend)
-            bot.sendMessage(clientID, fullMessage);
+            sendLargeMessage(clientID, fullMessage);
     } catch (error) {
         console.log(error);
         if (isSend)
-            bot.sendMessage(clientID, botErrMessage);
+            sendLargeMessage(clientID, botErrMessage);
     }
     if (isSend)
         cleanMessage();
@@ -426,13 +426,13 @@ async function get_currentDockerStatus(clientID, isSend) {
             fullMessage = fullMessage + JSON.stringify(data[i], null, '\t') + '\n';
         }
         if (isSend)
-            bot.sendMessage(clientID, fullMessage);
+            sendLargeMessage(clientID, fullMessage);
         currentDockerStatus = fullMessage;
 
     } catch (error) {
         console.log(error)
         if (isSend)
-            bot.sendMessage(clientID, botErrMessage);
+            sendLargeMessage(clientID, botErrMessage);
     }
     if (isSend)
         cleanMessage();
@@ -477,7 +477,23 @@ function runSelectQuery(sql, params = []) {
         })
     })
 }
+function sendLargeMessage(clientID, message)
+{
+    let res = chunkSubstr(message)
+    res.forEach(chunk => {
+        bot.sendMessage(clientID, chunk);
+    });
+}
+function chunkSubstr(str) {
+  const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
+  const chunks = new Array(numChunks)
 
+  for (let i = 0, o = 0; i < numChunks; ++i, o += process.env.MESSAGE_CHUNK_SIZE) {
+    chunks[i] = str.substr(o, process.env.MESSAGE_CHUNK_SIZE)
+  }
+
+  return chunks
+}
 initTele();
 module.exports = {
     bot: bot,
