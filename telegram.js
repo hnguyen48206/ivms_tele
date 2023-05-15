@@ -212,7 +212,7 @@ function showGuideline(clientID) {
     <b><i>start auto</i></b> : nhận tin nhắn định kỳ.\n
     <b><i>unsubscribe</i></b> : ngưng nhận tất cả các tin báo (để khôi phục dịch vụ, gõ lệnh hi).\n
     `
-    sendLargeMessage(clientID, text, { parse_mode: "HTML" });
+    bot.sendMessage(clientID, text, { parse_mode: "HTML" });
 }
 async function removeUser(clientID) {
     global.listOfClients = global.listOfClients.filter(client => client != clientID)
