@@ -397,7 +397,7 @@ async function get_currentSystemStatus(clientID, isSend) {
         currentCPUStatus = cpuMessage;
         //get RAM info
         data = await si.mem();
-        data['used_by_percent'] = Math.round(data.used / data.total * 100);
+        data['used_by_percent'] = Math.round(data.active / data.total * 100);
         currentRAMStatus_data = lodash.cloneDeep(data);
         currentRAMStatus = JSON.stringify(data, null, '\t')
         let fullMessage = `--------- SERVER: GATEWAY - ${process.env.GATEWAY_IP} ---------\n` +
