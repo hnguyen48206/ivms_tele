@@ -242,33 +242,37 @@ async function autoCheck() {
             Object.keys(currentCPUStatus_data.cpus[i]).forEach((key) => validKeys.includes(key) || delete currentCPUStatus_data.cpus[i][key]);
             fullMessage = fullMessage + JSON.stringify(currentCPUStatus_data.cpus[i], null, '\t') + '\n';
         }
-        if (currentTotalLoad > process.env.CPU_UPPER_LIMIT) {
-            
-            writeLogs('gateway', 'cpus', JSON.stringify(tmp));
+        if (currentTotalLoad > process.env.CPU_UPPER_LIMIT) {            
             global.listOfClients.forEach(clientID => {
                 sendLargeMessage(clientID, fullMessage);
             });
             global.clientWhiteList.forEach(clientID => {
                 sendLargeMessage(clientID, fullMessage);
-            })
+            });
+            writeLogs('gateway', 'cpus', JSON.stringify(tmp));
         }
     }
     if (currentDiskstatus_data != null) {
         let fullMessage = `*************************** DISKs OVER ${process.env.DISK_UPPER_LIMIT}% ****************************** \n
         ********* SERVER: GATEWAY - ${process.env.GATEWAY_IP} *********\n
         `;
+        let subMessage =''
         currentDiskstatus_data.forEach(disk => {
             if (parseFloat(disk._capacity) > process.env.DISK_UPPER_LIMIT && !disk._filesystem.includes('loop')) {
-                fullMessage = fullMessage + JSON.stringify(disk, null, '\t') + '\n';
+                subMessage = subMessage + JSON.stringify(disk, null, '\t') + '\n';
             }
         });
-        global.listOfClients.forEach(clientID => {
-            sendLargeMessage(clientID, fullMessage);
-        });
-        global.clientWhiteList.forEach(clientID => {
-            sendLargeMessage(clientID, fullMessage);
-        })
-        writeLogs('gateway', 'disks', JSON.stringify(currentDiskstatus_data));
+        if(subMessage!='')
+        {
+            fullMessage = fullMessage + subMessage;
+            global.listOfClients.forEach(clientID => {
+                sendLargeMessage(clientID, fullMessage);
+            });
+            global.clientWhiteList.forEach(clientID => {
+                sendLargeMessage(clientID, fullMessage);
+            })
+            writeLogs('gateway', 'disks', JSON.stringify(currentDiskstatus_data));
+        }       
     }
     if (currentRAMStatus_data != null) {
         if (currentRAMStatus_data.used_by_percent > process.env.RAM_UPPER_LIMIT) {
