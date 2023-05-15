@@ -480,9 +480,10 @@ function runSelectQuery(sql, params = []) {
 function sendLargeMessage(clientID, message)
 {
     let res = chunkSubstr(message)
-    res.forEach(chunk => {
-        bot.sendMessage(clientID, chunk);
-    });
+    for(let i=res.length-1; i>=0; --i)
+    {
+        bot.sendMessage(clientID, res[i]);
+    }
 }
 function chunkSubstr(str) {
   const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
