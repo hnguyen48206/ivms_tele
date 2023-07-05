@@ -12,17 +12,24 @@ var auto_interval;
 const db = require('./dbManager.js');
 global.listOfClients = [];
 global.clientWhiteList = [];
-
+var isWaitingForNextPart=false;
+var waitingList=[]
 async function initTele() {
     if (token != null) {
         try {
             bot = new TelegramBot(token, { polling: true });
             await initDB();
 
+            //Set up auto system resource checking
             auto_interval = setInterval(() => {
                 autoCheck();
             }, process.env.AUTO_CHECK_INTERVAL);
 
+            //Set up cron to clear logs data
+            cron.schedule(`0 0 */${process.env.AUTO_LOGS_CLEANING_INTERVAL!=null?process.env.AUTO_LOGS_CLEANING_INTERVAL:3} * *`, function() {
+                console.log('running a task every xxx days');
+                clearLogsAll();
+              });
 
             //at this time, bot is live. So we can run cronjobs to get system status periodically
             inform_interval = setInterval(() => {
@@ -159,6 +166,12 @@ function clearLogs(serverName) {
     console.log(serverName)
     runquery(`DELETE FROM ServersLog WHERE ServerName = ?`, [serverName]).then(res => {
         console.log('Clear log ok.')
+    });
+}
+function clearLogsAll()
+{
+    runquery(`DELETE FROM ServersLog`).then(res => {
+        console.log('Clear all log ok.')
     });
 }
 async function getLogs(serverName, fromDate = null, toDate = null) {
@@ -491,11 +504,37 @@ function runSelectQuery(sql, params = []) {
 }
 async function sendLargeMessage(clientID, message)
 {
-    let res = chunkSubstr(message)
-    for(let i=0; i<res.length; ++i)
+    if(isWaitingForNextPart)
     {
-        await bot.sendMessage(clientID, res[i]);
+        waitingList.push({
+            clientID:clientID,
+            message:message
+        })
     }
+    else{
+        let res = chunkSubstr(message);
+        if(res.length>1)
+        isWaitingForNextPart=true;
+
+        for(let i=0; i<res.length; ++i)
+        {
+            await bot.sendMessage(clientID, res[i]);
+            if(i==res.length)
+            {
+                if(res.length>1)
+                isWaitingForNextPart=false;
+                if(waitingList.length>0)
+                {
+                    processItemInWaitList();
+                }
+            }
+        }
+    }   
+}
+function processItemInWaitList()
+{
+    let item = waitingList.shift();
+    sendLargeMessage(item.clientID, item.message);
 }
 function chunkSubstr(str) {
   const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
