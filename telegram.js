@@ -346,6 +346,7 @@ async function startSendingAutoMessage(clientID) {
     }
 }
 async function send_logs_periodically() {
+    console.log(' send_logs_periodically')
     get_currentSystemStatus(null, false);
     get_currentDiskstatus(null, false);
     get_currentDockerStatus(null, false);
