@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.TELE_TOKEN || null;
 var bot = null;
+const cron = require('node-cron');
 const diskInfo = require('node-disk-info');
 const si = require('systeminformation');
 const lodash = require('lodash');
@@ -12,8 +13,8 @@ var auto_interval;
 const db = require('./dbManager.js');
 global.listOfClients = [];
 global.clientWhiteList = [];
-var isWaitingForNextPart=false;
-var waitingList=[]
+var isWaitingForNextPart = false;
+var waitingList = []
 async function initTele() {
     if (token != null) {
         try {
@@ -26,10 +27,10 @@ async function initTele() {
             }, process.env.AUTO_CHECK_INTERVAL);
 
             //Set up cron to clear logs data
-            cron.schedule(`0 0 */${process.env.AUTO_LOGS_CLEANING_INTERVAL!=null?process.env.AUTO_LOGS_CLEANING_INTERVAL:3} * *`, function() {
+            cron.schedule(`0 0 */${process.env.AUTO_LOGS_CLEANING_INTERVAL != null ? process.env.AUTO_LOGS_CLEANING_INTERVAL : 3} * *`, function () {
                 console.log('running a task every xxx days');
                 clearLogsAll();
-              });
+            });
 
             //at this time, bot is live. So we can run cronjobs to get system status periodically
             inform_interval = setInterval(() => {
@@ -90,6 +91,10 @@ async function initTele() {
             console.log(error)
         }
     }
+    else {
+        console.log('ENV NOT FOUND')
+        process.exit()
+    }
 }
 async function initDB() {
     await runquery(`CREATE TABLE IF NOT EXISTS Users
@@ -143,8 +148,7 @@ function writeLogs(serverName, type, logs) {
         });
     //Nếu là server khác ghi logs thì bắn thông báo lập tức
     try {
-        if(serverName!='gateway')
-        {
+        if (serverName != 'gateway') {
             console.log('here')
             let fullMessage = `*************************** ${type.toUpperCase()} OVER LIMIT ****************************** \n
             ********* SERVER: ${serverName} *********\n
@@ -168,8 +172,7 @@ function clearLogs(serverName) {
         console.log('Clear log ok.')
     });
 }
-function clearLogsAll()
-{
+function clearLogsAll() {
     runquery(`DELETE FROM ServersLog`).then(res => {
         console.log('Clear all log ok.')
     });
@@ -263,7 +266,7 @@ async function autoCheck() {
             Object.keys(currentCPUStatus_data.cpus[i]).forEach((key) => validKeys.includes(key) || delete currentCPUStatus_data.cpus[i][key]);
             fullMessage = fullMessage + JSON.stringify(currentCPUStatus_data.cpus[i], null, '\t') + '\n';
         }
-        if (currentTotalLoad > process.env.CPU_UPPER_LIMIT) {            
+        if (currentTotalLoad > process.env.CPU_UPPER_LIMIT) {
             global.listOfClients.forEach(clientID => {
                 sendLargeMessage(clientID, fullMessage);
             });
@@ -277,14 +280,13 @@ async function autoCheck() {
         let fullMessage = `*************************** DISKs OVER ${process.env.DISK_UPPER_LIMIT}% ****************************** \n
         ********* SERVER: GATEWAY - ${process.env.GATEWAY_IP} *********\n
         `;
-        let subMessage =''
+        let subMessage = ''
         currentDiskstatus_data.forEach(disk => {
             if (parseFloat(disk._capacity) > process.env.DISK_UPPER_LIMIT && !disk._filesystem.includes('loop')) {
                 subMessage = subMessage + JSON.stringify(disk, null, '\t') + '\n';
             }
         });
-        if(subMessage!='')
-        {
+        if (subMessage != '') {
             fullMessage = fullMessage + subMessage;
             global.listOfClients.forEach(clientID => {
                 sendLargeMessage(clientID, fullMessage);
@@ -293,14 +295,14 @@ async function autoCheck() {
                 sendLargeMessage(clientID, fullMessage);
             })
             writeLogs('gateway', 'disks', JSON.stringify(currentDiskstatus_data));
-        }       
+        }
     }
     if (currentRAMStatus_data != null) {
         if (currentRAMStatus_data.used_by_percent > process.env.RAM_UPPER_LIMIT) {
             let fullMessage = `*************************** RAM OVER ${process.env.RAM_UPPER_LIMIT}% ****************************** \n
             ********* SERVER: GATEWAY - ${process.env.GATEWAY_IP} *********\n
             `;
-             
+
             fullMessage = fullMessage + JSON.stringify(currentRAMStatus_data, null, '\t') + '\n';
             global.listOfClients.forEach(clientID => {
                 sendLargeMessage(clientID, fullMessage);
@@ -502,49 +504,43 @@ function runSelectQuery(sql, params = []) {
         })
     })
 }
-async function sendLargeMessage(clientID, message)
-{
-    if(isWaitingForNextPart)
-    {
+async function sendLargeMessage(clientID, message) {
+    if (isWaitingForNextPart) {
         waitingList.push({
-            clientID:clientID,
-            message:message
+            clientID: clientID,
+            message: message
         })
     }
-    else{
+    else {
         let res = chunkSubstr(message);
-        if(res.length>1)
-        isWaitingForNextPart=true;
+        if (res.length > 1)
+            isWaitingForNextPart = true;
 
-        for(let i=0; i<res.length; ++i)
-        {
+        for (let i = 0; i < res.length; ++i) {
             await bot.sendMessage(clientID, res[i]);
-            if(i==res.length)
-            {
-                if(res.length>1)
-                isWaitingForNextPart=false;
-                if(waitingList.length>0)
-                {
+            if (i == res.length) {
+                if (res.length > 1)
+                    isWaitingForNextPart = false;
+                if (waitingList.length > 0) {
                     processItemInWaitList();
                 }
             }
         }
-    }   
+    }
 }
-function processItemInWaitList()
-{
+function processItemInWaitList() {
     let item = waitingList.shift();
     sendLargeMessage(item.clientID, item.message);
 }
 function chunkSubstr(str) {
-  const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
-  const chunks = new Array(numChunks)
+    const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
+    const chunks = new Array(numChunks)
 
-  for (let i = 0, o = 0; i < numChunks; ++i, o += process.env.MESSAGE_CHUNK_SIZE) {
-    chunks[i] = str.substr(o, process.env.MESSAGE_CHUNK_SIZE)
-  }
+    for (let i = 0, o = 0; i < numChunks; ++i, o += process.env.MESSAGE_CHUNK_SIZE) {
+        chunks[i] = str.substr(o, process.env.MESSAGE_CHUNK_SIZE)
+    }
 
-  return chunks
+    return chunks
 }
 initTele();
 module.exports = {
@@ -554,7 +550,7 @@ module.exports = {
     clearLogs: clearLogs,
     getLogs: getLogs,
     createServer: createServer,
-    deleteServer:deleteServer,
-    getAllServer:getAllServer
+    deleteServer: deleteServer,
+    getAllServer: getAllServer
 };
 
