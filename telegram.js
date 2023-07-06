@@ -369,9 +369,12 @@ async function send_logs_periodically() {
     else
         {
             console.log('Some info is missing')
-            console.log(currentCPUStatus)
-            console.log(currentDockerStatus)
-            console.log(currentSystemStatus)            
+            if(currentDiskstatus!= '')
+            console.log('Có disk')
+            if(currentDockerStatus!='')
+            console.log('Có docker')
+            if(currentSystemStatus!='')
+            console.log('Có system')      
         }
     cleanMessage();
 }
