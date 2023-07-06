@@ -147,7 +147,7 @@ async function initDB() {
     }
     return Promise.resolve(true);
 }
-function writeLogs(serverName, type, logs) {
+async function writeLogs(serverName, type, logs) {
     runquery(`INSERT INTO ServersLog (Type, Content, ServerName)
     VALUES (?,?,?)`,
         [type, logs, serverName]).then(res => {
@@ -161,12 +161,13 @@ function writeLogs(serverName, type, logs) {
             ********* SERVER: ${serverName} *********\n
             `;
             fullMessage = fullMessage + JSON.stringify(JSON.parse(logs), null, '\t') + '\n';
-            global.listOfClients.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            });
-            global.clientWhiteList.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            })
+
+            for (let i = 0; i < global.listOfClients.length; ++i) {
+                await sendLargeMessage(global.listOfClients[i], fullMessage);
+            }
+            for (let i = 0; i < global.clientWhiteList.length; ++i) {
+                await sendLargeMessage(global.clientWhiteList[i], fullMessage);
+            }
         }
     } catch (error) {
         console.log(error)
@@ -274,12 +275,14 @@ async function autoCheck() {
             fullMessage = fullMessage + JSON.stringify(currentCPUStatus_data.cpus[i], null, '\t') + '\n';
         }
         if (currentTotalLoad > process.env.CPU_UPPER_LIMIT) {
-            global.listOfClients.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            });
-            global.clientWhiteList.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            });
+
+            for (let i = 0; i < global.listOfClients.length; ++i) {
+                await sendLargeMessage(global.listOfClients[i], fullMessage);
+            }
+            for (let i = 0; i < global.clientWhiteList.length; ++i) {
+                await sendLargeMessage(global.clientWhiteList[i], fullMessage);
+            }
+
             writeLogs('gateway', 'cpus', JSON.stringify(tmp));
         }
     }
@@ -295,12 +298,13 @@ async function autoCheck() {
         });
         if (subMessage != '') {
             fullMessage = fullMessage + subMessage;
-            global.listOfClients.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            });
-            global.clientWhiteList.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            })
+            for (let i = 0; i < global.listOfClients.length; ++i) {
+                await sendLargeMessage(global.listOfClients[i], fullMessage);
+            }
+            for (let i = 0; i < global.clientWhiteList.length; ++i) {
+                await sendLargeMessage(global.clientWhiteList[i], fullMessage);
+            }
+
             writeLogs('gateway', 'disks', JSON.stringify(currentDiskstatus_data));
         }
     }
@@ -311,12 +315,12 @@ async function autoCheck() {
             `;
 
             fullMessage = fullMessage + JSON.stringify(currentRAMStatus_data, null, '\t') + '\n';
-            global.listOfClients.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            });
-            global.clientWhiteList.forEach(clientID => {
-                sendLargeMessage(clientID, fullMessage);
-            })
+            for (let i = 0; i < global.listOfClients.length; ++i) {
+                await sendLargeMessage(global.listOfClients[i], fullMessage);
+            }
+            for (let i = 0; i < global.clientWhiteList.length; ++i) {
+                await sendLargeMessage(global.clientWhiteList[i], fullMessage);
+            }
             writeLogs('gateway', 'ram', JSON.stringify(currentRAMStatus_data));
         }
     }
@@ -360,11 +364,15 @@ async function send_logs_periodically() {
             get_currentDiskstatus(null, false),
             get_currentDockerStatus(null, false)
         ])
-    global.listOfClients.forEach(clientID => {
-        sendLargeMessage(clientID, currentDiskstatus);
-        sendLargeMessage(clientID, currentSystemStatus);
-        sendLargeMessage(clientID, currentDockerStatus);
-    });
+    for (let i = 0; i < global.listOfClients.length; ++i)
+        await Promise.all(
+            [
+                sendLargeMessage(global.listOfClients[i], currentDiskstatus),
+                sendLargeMessage(global.listOfClients[i], currentSystemStatus),
+                sendLargeMessage(global.listOfClients[i], currentDockerStatus),
+            ]
+        )
+
     // if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
     //     global.listOfClients.forEach(clientID => {
     //         sendLargeMessage(clientID, currentDiskstatus);
@@ -390,13 +398,18 @@ function get_all(clientID, isSend) {
     if (isSend) {
         setTimeout(() => {
             if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '') {
-                sendLargeMessage(clientID, currentDiskstatus);
-                sendLargeMessage(clientID, currentSystemStatus);
-                sendLargeMessage(clientID, currentDockerStatus);
+                Promise.all([
+                    sendLargeMessage(clientID, currentDiskstatus),
+                    sendLargeMessage(clientID, currentSystemStatus),
+                    sendLargeMessage(clientID, currentDockerStatus),
+                ])
+                cleanMessage();
             }
-            else
-                sendLargeMessage(clientID, botErrMessage);
-            cleanMessage();
+            else {
+                sendLargeMessage(clientID, botErrMessage).then(res => {
+                    cleanMessage();
+                })
+            }
         }, 5000);
     }
 }
@@ -414,7 +427,7 @@ async function get_currentDiskstatus(clientID, isSend) {
 
             currentDiskstatus = fullMessage;
             if (isSend) {
-                sendLargeMessage(clientID, fullMessage);
+                await sendLargeMessage(clientID, fullMessage);
                 cleanMessage();
             }
         }
@@ -423,7 +436,7 @@ async function get_currentDiskstatus(clientID, isSend) {
     } catch (error) {
         console.log(error);
         if (isSend) {
-            sendLargeMessage(clientID, botErrMessage);
+            await sendLargeMessage(clientID, botErrMessage);
             cleanMessage();
         }
     }
@@ -453,11 +466,11 @@ async function get_currentSystemStatus(clientID, isSend) {
             currentRAMStatus;
         currentSystemStatus = fullMessage;
         if (isSend)
-            sendLargeMessage(clientID, fullMessage);
+            await sendLargeMessage(clientID, fullMessage);
     } catch (error) {
         console.log(error);
         if (isSend)
-            sendLargeMessage(clientID, botErrMessage);
+            await sendLargeMessage(clientID, botErrMessage);
     }
     if (isSend)
         cleanMessage();
@@ -476,13 +489,13 @@ async function get_currentDockerStatus(clientID, isSend) {
             fullMessage = fullMessage + JSON.stringify(data[i], null, '\t') + '\n';
         }
         if (isSend)
-            sendLargeMessage(clientID, fullMessage);
+            await sendLargeMessage(clientID, fullMessage);
         currentDockerStatus = fullMessage;
 
     } catch (error) {
         console.log(error)
         if (isSend)
-            sendLargeMessage(clientID, botErrMessage);
+            await sendLargeMessage(clientID, botErrMessage);
     }
     if (isSend)
         cleanMessage();
@@ -550,10 +563,11 @@ async function sendLargeMessage(clientID, message) {
             }
         }
     }
+    return Promise.resolve(true);
 }
-function processItemInWaitList() {
+async function processItemInWaitList() {
     let item = waitingList.shift();
-    sendLargeMessage(item.clientID, item.message);
+    await sendLargeMessage(item.clientID, item.message);
 }
 function chunkSubstr(str) {
     const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
