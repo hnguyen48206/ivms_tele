@@ -354,16 +354,13 @@ async function startSendingAutoMessage(clientID) {
 }
 async function send_logs_periodically() {
     // console.log(' send_logs_periodically')
-    get_currentSystemStatus(null, false);
-    get_currentDiskstatus(null, false);
-    get_currentDockerStatus(null, false);
-
     await Promise.all(
         [
             get_currentSystemStatus(null, false),
             get_currentDiskstatus(null, false),
             get_currentDockerStatus(null, false)
         ])
+    console.log('Get All')
     for (let i = 0; i < global.listOfClients.length; ++i)
         await Promise.all(
             [
@@ -372,6 +369,7 @@ async function send_logs_periodically() {
                 sendLargeMessage(global.listOfClients[i], currentDockerStatus),
             ]
         )
+    console.log('Sent All')
 
     // if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
     //     global.listOfClients.forEach(clientID => {
@@ -390,27 +388,28 @@ async function send_logs_periodically() {
     //         console.log('Có system')      
     //     }
     cleanMessage();
-}
+} async
 function get_all(clientID, isSend) {
-    get_currentSystemStatus(clientID, false);
-    get_currentDiskstatus(clientID, false);
-    get_currentDockerStatus(clientID, false);
+    Promise.all([
+        get_currentSystemStatus(clientID, false),
+        get_currentDiskstatus(clientID, false),
+        get_currentDockerStatus(clientID, false),
+    ])
+
     if (isSend) {
-        setTimeout(() => {
-            if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '') {
-                Promise.all([
-                    sendLargeMessage(clientID, currentDiskstatus),
-                    sendLargeMessage(clientID, currentSystemStatus),
-                    sendLargeMessage(clientID, currentDockerStatus),
-                ])
+        if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '') {
+            Promise.all([
+                sendLargeMessage(clientID, currentDiskstatus),
+                sendLargeMessage(clientID, currentSystemStatus),
+                sendLargeMessage(clientID, currentDockerStatus),
+            ])
+            cleanMessage();
+        }
+        else {
+            sendLargeMessage(clientID, botErrMessage).then(res => {
                 cleanMessage();
-            }
-            else {
-                sendLargeMessage(clientID, botErrMessage).then(res => {
-                    cleanMessage();
-                })
-            }
-        }, 5000);
+            })
+        }
     }
 }
 async function get_currentDiskstatus(clientID, isSend) {
