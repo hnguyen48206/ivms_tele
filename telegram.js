@@ -19,8 +19,11 @@ async function initTele() {
     if (token != null) {
         try {
             bot = new TelegramBot(token, { polling: true });
+            if(db==null)
+            process.exit();
+            
             await initDB();
-
+        
             //Set up auto system resource checking
             auto_interval = setInterval(() => {
                 autoCheck();
@@ -346,7 +349,7 @@ async function startSendingAutoMessage(clientID) {
     }
 }
 async function send_logs_periodically() {
-    console.log(' send_logs_periodically')
+    // console.log(' send_logs_periodically')
     get_currentSystemStatus(null, false);
     get_currentDiskstatus(null, false);
     get_currentDockerStatus(null, false);

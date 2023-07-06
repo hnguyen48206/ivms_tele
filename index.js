@@ -4,7 +4,7 @@ const yargs = require("yargs");
 const path = require('path');
 const options = yargs
  .usage("Usage: -e <env_path>")
- .option("e", { alias: "env_path", describe: "Đường dẫn đến file môi trường", type: "string", demandOption: true })
+ .option("e", { alias: "env_path", describe: "Duong dan den file moi truong", type: "string", demandOption: true })
  .argv;
 // console.log(options.env_path)
 require("dotenv").config({path:path.resolve(options.env_path)});
