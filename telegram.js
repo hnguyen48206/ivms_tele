@@ -19,11 +19,11 @@ async function initTele() {
     if (token != null) {
         try {
             bot = new TelegramBot(token, { polling: true });
-            if(db==null)
-            process.exit();
+            if (db == null)
+                process.exit();
 
             await initDB();
-        
+
             //Set up auto system resource checking
             auto_interval = setInterval(() => {
                 autoCheck();
@@ -360,22 +360,27 @@ async function send_logs_periodically() {
             get_currentDiskstatus(null, false),
             get_currentDockerStatus(null, false)
         ])
-    if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
-        global.listOfClients.forEach(clientID => {
-            sendLargeMessage(clientID, currentDiskstatus);
-            sendLargeMessage(clientID, currentSystemStatus);
-            sendLargeMessage(clientID, currentDockerStatus);
-        });
-    else
-        {
-            console.log('Some info is missing')
-            if(currentDiskstatus!= '')
-            console.log('Có disk')
-            if(currentDockerStatus!='')
-            console.log('Có docker')
-            if(currentSystemStatus!='')
-            console.log('Có system')      
-        }
+    global.listOfClients.forEach(clientID => {
+        sendLargeMessage(clientID, currentDiskstatus);
+        sendLargeMessage(clientID, currentSystemStatus);
+        sendLargeMessage(clientID, currentDockerStatus);
+    });
+    // if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
+    //     global.listOfClients.forEach(clientID => {
+    //         sendLargeMessage(clientID, currentDiskstatus);
+    //         sendLargeMessage(clientID, currentSystemStatus);
+    //         sendLargeMessage(clientID, currentDockerStatus);
+    //     });
+    // else
+    //     {
+    //         console.log('Some info is missing')
+    //         if(currentDiskstatus!= '')
+    //         console.log('Có disk')
+    //         if(currentDockerStatus!='')
+    //         console.log('Có docker')
+    //         if(currentSystemStatus!='')
+    //         console.log('Có system')      
+    //     }
     cleanMessage();
 }
 function get_all(clientID, isSend) {
@@ -414,7 +419,7 @@ async function get_currentDiskstatus(clientID, isSend) {
             }
         }
         else
-        console.log('No disk info')
+            console.log('No disk info')
     } catch (error) {
         console.log(error);
         if (isSend) {
