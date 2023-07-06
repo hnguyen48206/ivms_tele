@@ -361,7 +361,7 @@ async function send_logs_periodically() {
     ]
     await runMultiplePromiseSequentially(pList)
 
-    console.log('Get All')
+    // console.log('Get All')
     for (let i = 0; i < global.listOfClients.length; ++i) {
         pList = [
             sendLargeMessage(global.listOfClients[i], currentDiskstatus),
@@ -371,7 +371,7 @@ async function send_logs_periodically() {
         await runMultiplePromiseSequentially(pList)
     }
 
-    console.log('Sent All')
+    // console.log('Sent All')
 
     cleanMessage();
 }
@@ -541,7 +541,7 @@ async function sendLargeMessage(clientID, message) {
     for (let i = 0; i < res.length; ++i) {
         try {
             let teleSentStatus = await bot.sendMessage(clientID, res[i]);
-            console.log(teleSentStatus)
+            // console.log(teleSentStatus)
         } catch (error) {
             console.log(error)
         }
