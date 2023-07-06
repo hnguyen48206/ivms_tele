@@ -539,32 +539,54 @@ function runSelectQuery(sql, params = []) {
         })
     })
 }
-async function sendLargeMessage(clientID, message) {
-    if (isWaitingForNextPart) {
-        waitingList.push({
-            clientID: clientID,
-            message: message
-        })
-    }
-    else {
-        let res = chunkSubstr(message);
-        if (res.length > 1)
-            isWaitingForNextPart = true;
+// async function sendLargeMessage(clientID, message) {
+//     if (isWaitingForNextPart) {
+//         waitingList.push({
+//             clientID: clientID,
+//             message: message
+//         })
+//     }
+//     else {
+//         let res = chunkSubstr(message);
+//         if (res.length > 1)
+//             isWaitingForNextPart = true;
 
-        for (let i = 0; i < res.length; ++i) {
-            let teleSentStatus = await bot.sendMessage(clientID, res[i]);
-            console.log(teleSentStatus)
-            if (i == res.length) {
-                if (res.length > 1)
-                    isWaitingForNextPart = false;
-                if (waitingList.length > 0) {
-                    processItemInWaitList();
-                }
-            }
+//         for (let i = 0; i < res.length; ++i) {
+//             let teleSentStatus = await bot.sendMessage(clientID, res[i]);
+//             console.log(teleSentStatus)
+//             if (i == res.length) {
+//                 if (res.length > 1)
+//                     isWaitingForNextPart = false;
+//                 if (waitingList.length > 0) {
+//                     processItemInWaitList();
+//                 }
+//             }
+//         }
+//     }
+//     return Promise.resolve(true);
+// }
+
+async function sendLargeMessage(chatId, text, retries = 3) {
+    const MAX_MESSAGE_LENGTH = 4000;
+    let used_retries = 0;
+    let chunk_send_result;
+    let chunk_counts = Math.ceil(text.length/MAX_MESSAGE_LENGTH);
+    for (let chunk = 0; chunk < chunk_counts; chunk++) {
+      try{
+        let chunk_start = MAX_MESSAGE_LENGTH * chunk;
+        let chunk_end = Math.max(MAX_MESSAGE_LENGTH * (chunk + 1), text.length);
+        chunk_send_result = await bot.sendMessage(chatId, text.slice(chunk_start, chunk_end));
+      }catch (error){
+        used_retries  += 1;
+        chunk -= 1;
+        if (used_retries > retries){
+          throw error;
         }
+      }
     }
-    return Promise.resolve(true);
-}
+    return  chunk_send_result;
+  }
+
 async function processItemInWaitList() {
     let item = waitingList.shift();
     await sendLargeMessage(item.clientID, item.message);
