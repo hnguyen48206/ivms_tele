@@ -354,21 +354,23 @@ async function startSendingAutoMessage(clientID) {
 }
 async function send_logs_periodically() {
     // console.log(' send_logs_periodically')
-    await Promise.all(
-        [
-            get_currentSystemStatus(null, false),
-            get_currentDiskstatus(null, false),
-            get_currentDockerStatus(null, false)
-        ])
+    let pList = [
+        get_currentSystemStatus(null, false),
+        get_currentDiskstatus(null, false),
+        get_currentDockerStatus(null, false)
+    ]
+    await runMultiplePromiseSequentially(pList)
+
     console.log('Get All')
-    for (let i = 0; i < global.listOfClients.length; ++i)
-        await Promise.all(
-            [
-                sendLargeMessage(global.listOfClients[i], currentDiskstatus),
-                sendLargeMessage(global.listOfClients[i], currentSystemStatus),
-                sendLargeMessage(global.listOfClients[i], currentDockerStatus),
-            ]
-        )
+    for (let i = 0; i < global.listOfClients.length; ++i) {
+        pList = [
+            sendLargeMessage(global.listOfClients[i], currentDiskstatus),
+            sendLargeMessage(global.listOfClients[i], currentSystemStatus),
+            sendLargeMessage(global.listOfClients[i], currentDockerStatus),
+        ]
+        await runMultiplePromiseSequentially(pList)
+    }
+
     console.log('Sent All')
 
     // if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
@@ -388,25 +390,36 @@ async function send_logs_periodically() {
     //         console.log('Có system')      
     //     }
     cleanMessage();
-} 
+}
+async function runMultiplePromiseSequentially(pList) {
+    for (let i = 0; i < pList.length; i++) {
+        try {
+            await pList[i];
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    return Promise.resolve(true)
+}
 async function get_all(clientID, isSend) {
-    Promise.all([
+    let pList = [
         get_currentSystemStatus(clientID, false),
         get_currentDiskstatus(clientID, false),
         get_currentDockerStatus(clientID, false),
-    ])
-
+    ]
+    await runMultiplePromiseSequentially(pList)
     if (isSend) {
         if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '') {
-            Promise.all([
+            pList = [
                 sendLargeMessage(clientID, currentDiskstatus),
                 sendLargeMessage(clientID, currentSystemStatus),
                 sendLargeMessage(clientID, currentDockerStatus),
-            ])
+            ]
+            await runMultiplePromiseSequentially(pList)
             cleanMessage();
         }
         else {
-            sendLargeMessage(clientID, botErrMessage).then(res => {
+            await sendLargeMessage(clientID, botErrMessage).then(res => {
                 cleanMessage();
             })
         }
@@ -539,60 +552,15 @@ function runSelectQuery(sql, params = []) {
         })
     })
 }
-// async function sendLargeMessage(clientID, message) {
-//     if (isWaitingForNextPart) {
-//         waitingList.push({
-//             clientID: clientID,
-//             message: message
-//         })
-//     }
-//     else {
-//         let res = chunkSubstr(message);
-//         if (res.length > 1)
-//             isWaitingForNextPart = true;
-
-//         for (let i = 0; i < res.length; ++i) {
-//             let teleSentStatus = await bot.sendMessage(clientID, res[i]);
-//             console.log(teleSentStatus)
-//             if (i == res.length) {
-//                 if (res.length > 1)
-//                     isWaitingForNextPart = false;
-//                 if (waitingList.length > 0) {
-//                     processItemInWaitList();
-//                 }
-//             }
-//         }
-//     }
-//     return Promise.resolve(true);
-// }
-
-async function sendLargeMessage(chatId, text, retries = 3) {
-    const MAX_MESSAGE_LENGTH = process.env.MESSAGE_CHUNK_SIZE!=null?process.env.MESSAGE_CHUNK_SIZE:4000;
-    let used_retries = 0;
-    let chunk_send_result;
-    let chunk_counts = Math.ceil(text.length/MAX_MESSAGE_LENGTH);
-    for (let chunk = 0; chunk < chunk_counts; chunk++) {
-      try{
-        let chunk_start = MAX_MESSAGE_LENGTH * chunk;
-        let chunk_end = Math.max(MAX_MESSAGE_LENGTH * (chunk + 1), text.length);
-        let message = text.slice(chunk_start, chunk_end)
-        console.log(message.length)
-        chunk_send_result = await bot.sendMessage(chatId, message);
-      }catch (error){
-        used_retries  += 1;
-        chunk -= 1;
-        if (used_retries > retries){
-          throw error;
-        }
-      }
+async function sendLargeMessage(clientID, message) {
+    let res = chunkSubstr(message);
+    for (let i = 0; i < res.length; ++i) {
+        let teleSentStatus = await bot.sendMessage(clientID, res[i]);
+        // console.log(teleSentStatus)
     }
-    return  chunk_send_result;
-  }
-
-async function processItemInWaitList() {
-    let item = waitingList.shift();
-    await sendLargeMessage(item.clientID, item.message);
+    return Promise.resolve(true);
 }
+
 function chunkSubstr(str) {
     const numChunks = Math.ceil(str.length / process.env.MESSAGE_CHUNK_SIZE)
     const chunks = new Array(numChunks)
