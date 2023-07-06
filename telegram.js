@@ -575,7 +575,9 @@ async function sendLargeMessage(chatId, text, retries = 3) {
       try{
         let chunk_start = MAX_MESSAGE_LENGTH * chunk;
         let chunk_end = Math.max(MAX_MESSAGE_LENGTH * (chunk + 1), text.length);
-        chunk_send_result = await bot.sendMessage(chatId, text.slice(chunk_start, chunk_end));
+        let message = text.slice(chunk_start, chunk_end)
+        console.log(message.length)
+        chunk_send_result = await bot.sendMessage(chatId, message);
       }catch (error){
         used_retries  += 1;
         chunk -= 1;
