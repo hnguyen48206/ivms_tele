@@ -539,8 +539,13 @@ function runSelectQuery(sql, params = []) {
 async function sendLargeMessage(clientID, message) {
     let res = chunkSubstr(message);
     for (let i = 0; i < res.length; ++i) {
-        let teleSentStatus = await bot.sendMessage(clientID, res[i]);
-        console.log(teleSentStatus)
+        try {
+            let teleSentStatus = await bot.sendMessage(clientID, res[i]);
+            console.log(teleSentStatus)
+        } catch (error) {
+            console.log(error)
+        }
+
     }
     return Promise.resolve(true);
 }
