@@ -388,8 +388,8 @@ async function send_logs_periodically() {
     //         console.log('Có system')      
     //     }
     cleanMessage();
-} async
-function get_all(clientID, isSend) {
+} 
+async function get_all(clientID, isSend) {
     Promise.all([
         get_currentSystemStatus(clientID, false),
         get_currentDiskstatus(clientID, false),
