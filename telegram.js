@@ -552,7 +552,8 @@ async function sendLargeMessage(clientID, message) {
             isWaitingForNextPart = true;
 
         for (let i = 0; i < res.length; ++i) {
-            await bot.sendMessage(clientID, res[i]);
+            let teleSentStatus = await bot.sendMessage(clientID, res[i]);
+            console.log(teleSentStatus)
             if (i == res.length) {
                 if (res.length > 1)
                     isWaitingForNextPart = false;
