@@ -567,7 +567,7 @@ function runSelectQuery(sql, params = []) {
 // }
 
 async function sendLargeMessage(chatId, text, retries = 3) {
-    const MAX_MESSAGE_LENGTH = 4000;
+    const MAX_MESSAGE_LENGTH = process.env.MESSAGE_CHUNK_SIZE!=null?process.env.MESSAGE_CHUNK_SIZE:4000;
     let used_retries = 0;
     let chunk_send_result;
     let chunk_counts = Math.ceil(text.length/MAX_MESSAGE_LENGTH);
