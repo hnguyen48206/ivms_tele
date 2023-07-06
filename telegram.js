@@ -413,6 +413,8 @@ async function get_currentDiskstatus(clientID, isSend) {
                 cleanMessage();
             }
         }
+        else
+        console.log('No disk info')
     } catch (error) {
         console.log(error);
         if (isSend) {
