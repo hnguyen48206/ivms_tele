@@ -13,7 +13,7 @@ function createDbConnection() {
         return null;
       }
     });
-    console.log("Connection with SQLite has been established");
+    console.log("Connection with Database has been established");
     return db;
   }
 }

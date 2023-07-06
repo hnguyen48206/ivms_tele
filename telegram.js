@@ -21,7 +21,7 @@ async function initTele() {
             bot = new TelegramBot(token, { polling: true });
             if(db==null)
             process.exit();
-            
+
             await initDB();
         
             //Set up auto system resource checking
@@ -366,8 +366,13 @@ async function send_logs_periodically() {
             sendLargeMessage(clientID, currentSystemStatus);
             sendLargeMessage(clientID, currentDockerStatus);
         });
-    // else
-    //     sendLargeMessage(clientID, botErrMessage);
+    else
+        {
+            console.log('Some info is missing')
+            console.log(currentCPUStatus)
+            console.log(currentDockerStatus)
+            console.log(currentSystemStatus)            
+        }
     cleanMessage();
 }
 function get_all(clientID, isSend) {
