@@ -373,22 +373,6 @@ async function send_logs_periodically() {
 
     console.log('Sent All')
 
-    // if (currentDiskstatus != '' && currentDockerStatus != '' && currentSystemStatus != '')
-    //     global.listOfClients.forEach(clientID => {
-    //         sendLargeMessage(clientID, currentDiskstatus);
-    //         sendLargeMessage(clientID, currentSystemStatus);
-    //         sendLargeMessage(clientID, currentDockerStatus);
-    //     });
-    // else
-    //     {
-    //         console.log('Some info is missing')
-    //         if(currentDiskstatus!= '')
-    //         console.log('Có disk')
-    //         if(currentDockerStatus!='')
-    //         console.log('Có docker')
-    //         if(currentSystemStatus!='')
-    //         console.log('Có system')      
-    //     }
     cleanMessage();
 }
 async function runMultiplePromiseSequentially(pList) {
@@ -556,7 +540,7 @@ async function sendLargeMessage(clientID, message) {
     let res = chunkSubstr(message);
     for (let i = 0; i < res.length; ++i) {
         let teleSentStatus = await bot.sendMessage(clientID, res[i]);
-        // console.log(teleSentStatus)
+        console.log(teleSentStatus)
     }
     return Promise.resolve(true);
 }
